@@ -1,0 +1,56 @@
+---
+- block:
+    - apt_key:
+        data: "{{ lookup('file', 'docker-apt-key') }}"
+        state: present
+
+    - name: "Add repository"
+      apt_repository:
+        repo: 'deb {{ docker_repo }} ubuntu-{{ ansible_distribution_release }} main'
+        state: present
+  when: internet_available | bool
+
+- name: "Install docker"
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - docker.io
+    - docker-compose
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 10
+
+- name: "Add users to the docker group"
+  user:
+    name:   "{{ item }}"
+    groups: "{{ docker_group }}"
+    append: yes
+  with_items: "{{ docker_group_members }}"
+  when: docker_group_members is defined
+
+- name: "Create docker client dir"
+  file:
+    name: "/etc/docker"
+    state: directory
+    mode: "u=rwx,g=rx,o=rx"
+
+- name: "Deploy Docker client conf"
+  template:
+    src: "{{ item }}.j2"
+    dest: "/etc/docker/{{ item }}"
+  with_items:
+    - daemon.json
+  when: cj_nexus | bool
+
+- name: "start docker service"
+  service:
+    name: docker
+    state: restarted
+    enabled: yes
+
+- name: "wait until docker service is up"
+  wait_for:
+    path: "{{ docker_sock }}"
+    delay: 10

@@ -1,0 +1,11 @@
+[deploy]
+local ansible_connection=local
+
+[consul-master]
+ubu01 ansible_host=10.100.0.11
+ubu02 ansible_host=10.100.0.12
+ubu03 ansible_host=10.100.0.13
+
+[consul-master:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_pass=vagrant

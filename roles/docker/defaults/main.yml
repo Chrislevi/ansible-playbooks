@@ -1,0 +1,18 @@
+---
+# defaults file for ansible-role-simple-docker-daemon
+
+docker_group: docker
+docker_group_members: []
+#docker_version_major: 1
+#docker_version_minor: 2
+#docker_version_patch: 12
+#docker_version: "{{ docker_version_major }}.{{ docker_version_minor }}.{{ docker_version_patch }}"
+
+docker_systemd_dir: /etc/systemd/system/docker.service.d
+
+docker_keyserver: hkp://p80.pool.sks-keyservers.net:80
+docker_repo_key: "58118E89F3A912897C070ADBF76221572C52609D"
+docker_repo: http://apt.dockerproject.org/repo
+docker_packages:
+  - apt-transport-https
+  - ca-certificates

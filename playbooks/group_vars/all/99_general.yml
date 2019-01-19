@@ -1,0 +1,29 @@
+# ------------------------------------------ General -------------------------------------------- #
+docker_archive: true  # Archive containers
+
+work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
+reqs_dir: "{{ work_dir }}/reqs"
+
+# Internet connectivity check
+internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 0  && echo True') }}"
+
+common_packages:
+  - htop
+  - vim
+  - python3-pip
+  - apt-transport-https
+  - ca-certificates
+#------------------------------------------- Docker -----------------------------------------------#
+# Registry
+registry_hostname: registry
+registry_port: 5005
+s3_storage:
+  enabled: false
+  access_key: ""
+  secret_key: ""
+
+
+# Docker containers to be archived
+docker_archives:
+  - { name: "{{ juseppe_container_name }}", image: "{{ juseppe_container_image }}" }
+  - { name: "{{ gitlab_container_name }}", image: "{{ gitlab_container_image }}" }

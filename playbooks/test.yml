@@ -1,0 +1,6 @@
+---
+- hosts: ubu01
+  become: yes
+  tasks:
+  - debug: 
+      msg: "{{ hostvars[inventory_hostname].netid }}"

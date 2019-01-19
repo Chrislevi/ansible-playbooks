@@ -1,0 +1,11 @@
+- name: "Configure Registry DNS"
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ hostvars[groups['deployer'][0]]['ansible_default_ipv4']['address'] }}  {{ registry_hostname }}"
+
+- name: "Install common packages"
+  package:
+    name: "{{ iten }}"
+    state: present
+  loop:
+    - "{{ common_packages }}"

@@ -1,0 +1,68 @@
+---
+- name: "Network advanced settings"
+  sysctl: name="{{ item.key }}" value="{{ item.value }}"
+  with_items:
+  - { key: "net.ipv4.ip_forward", value: 1 }
+  - { key: "net.ipv4.conf.all.rp_filter", value: 0 }
+  - { key: "net.ipv4.conf.default.rp_filter", value: 0 }
+
+- name: "Install packages"
+  package:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+  - ruby-dev
+  - libxslt-dev
+  - libxml2-dev
+  - libvirt-dev
+  - qemu-utils
+  - qemu-kvm
+  - libvirt-bin
+  - ubuntu-vm-builder
+  - bridge-utils
+  - virt-manager
+  - virt-viewer
+  - qemu-system
+  - vagrant
+
+- name: "Install vagrant plugins"
+  shell: "vagrant plugin install {{ item }}"
+  with_items:
+  - vagrant-libvirt
+  - vagrant-mutate
+  - vagrant-disksize
+
+- name: "Add Libvirt user"
+  shell: "sudo usermod -a -G libvirtd {{ run_user }}"
+
+- name: "create vagrant directory"
+  file:
+    path: "{{ item }}"
+    state: directory
+  with_items:
+  - "{{ vagrant_dir }}"
+  - "{{ logs_dir }}"
+
+- name: "Deploy Vagrant configuration"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ vagrant_dir }}/{{ item }}"
+  with_items:
+  - Vagrantfile
+  - vagrant.yml
+  - bootstrap-ubuntu.sh
+
+- name: "Destroy previous machines"
+  shell: "vagrant destroy -f {{ item }}"
+  args:
+    chdir: "{{ vagrant_dir }}"
+  with_items:
+  - "{{ groups['virt-nodes'] }}"
+
+- name: "Instantiate virtual machines"
+  shell: "vagrant up {{ item }} >> {{ logs_dir }}/vagrant.log 2>&1"
+  args:
+    chdir: "{{ vagrant_dir }}"
+  with_items:
+  - "{{ groups['virt-nodes'] }}"
+

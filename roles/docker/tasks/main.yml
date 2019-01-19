@@ -1,0 +1,13 @@
+---
+# tasks file for ansible-role-simple-docker-daemon
+
+- name: "Include Debian requirements"
+  include: "docker-install.yml"
+
+- name: "Archive/Load containers"
+  include: "archive-containers.yml"
+  when: docker_archive | bool
+  with_items:
+    - "{{ docker_archives }}"
+  loop_control:
+    loop_var: archive

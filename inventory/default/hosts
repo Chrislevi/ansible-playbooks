@@ -1,0 +1,31 @@
+[deploy]
+localhost ansible_connection=local
+
+[ubuntu]
+ubu01 id='11'
+
+[ubuntu:vars]
+box_name=yk0/ubuntu-xenial
+box_user=user
+box_pass=qwe123
+cidr='10.0.0.0/24'
+netid="{{ cidr.split('.')[0] }}.{{ cidr.split('.')[1] }}.{{ cidr.split('.')[2] }}."
+ram=2048
+cpu=1
+disksize=20GB
+
+[centos]
+#ctos01 id='11'
+
+[centos:vars]
+box_name=centos/7
+box_user=user
+box_pass=qwe123
+cidr='10.0.0.0/24'
+netid="{{ cidr.split('.')[0] }}.{{ cidr.split('.')[1] }}.{{ cidr.split('.')[2] }}."
+ram=2048
+cpu=1
+
+[virt-nodes:children]
+ubuntu
+centos

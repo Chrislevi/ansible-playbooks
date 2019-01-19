@@ -1,0 +1,6 @@
+---
+- hosts: deploy
+  become: yes
+  become_user: "{{ run_user }}"
+  roles:
+  - virt

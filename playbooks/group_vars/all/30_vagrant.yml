@@ -1,0 +1,6 @@
+vagrant_version: "2.0.1"
+
+run_user: chrislevi
+logs_dir: "/var/log/ansible-vag"
+vagrant_dir: '../.Vagrant'
+playbooks_dir: "{{ lookup('pipe','pwd .') }}"
