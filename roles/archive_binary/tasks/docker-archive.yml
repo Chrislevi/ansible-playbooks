@@ -1,44 +1,57 @@
 ---
-- name: "Set docker.tar dynamic dir to infra -> {{ inventory_hostname }}"
-  set_fact:
-    archive_dir: "{{ reqs_dir }}"
-    local: true
-  when: "hostvars[inventory_hostname]['ansible_default_ipv4']['address'] in hostvars[inventory_hostname]['ansible_host']"
+- debug:
+    var: image
 
-- name: "Set docker.tar dynamic dir to external-> {{ inventory_hostname }}"
+- name: "SET_FACTS"
+  set_fact:
+    docker_image:
+      hostname: "{{ image.name }}"
+      ports: "{{ image.ports }}"
+      id: "{{ image.prefix }}:{{ image.tag }}"
+      binary: "{{ image.name }}-{{ image.tag }}-{{ ansible_date_time.date }}-tar.gz"
+
+- block:
+  - name: "Docker archive | Set DOCKER_IMAGE directory -> {{ reqs_dir }}"
+    set_fact:
+      archive_dir: "{{ reqs_dir }}"
+      local: true
+
+  - name: "Docker archive | Create binary directory"
+    file:
+      path: "{{ archive_dir }}"
+      state: directory
+  when: "'local' in inventory_hostname"
+
+- name: "Docker archive | Set DOCKER_IMAGE directory -> /tmp"
   set_fact:
     archive_dir: "/tmp"
     local: false
-  when: "hostvars[inventory_hostname]['ansible_default_ipv4']['address'] not in hostvars[inventory_hostname]['ansible_host']"
+  when: "not 'local' in inventory_hostname"
 
-- name: "Check {{ archive.name }}-docker.tar existance"
+- name: "Check {{ docker_image.binary }} exists"
   stat:
-    path: "{{ archive_dir }}/{{ archive.name }}-docker.tar"
-  register: tar
+    path: "{{ archive_dir }}/{{ docker_image.binary }}"
+  register: binary
 
-- debug: var=tar
-- debug: var=local
-- debug: var=hostvars[inventory_hostname]['ansible_default_ipv4']['address']
-
-- name: "Fetch container binaries"
+- name: "Fetch {{ docker_image.binary }}"
   synchronize:
-    src: "{{ reqs_dir }}/{{ archive.name }}-docker.tar"
-    dest: "{{ archive_dir }}/{{ archive.name }}-docker.tar"
+    src: "{{ reqs_dir }}/{{ docker_image.binary }}"
+    dest: "{{ archive_dir }}/{{ docker_image.binary }}"
     mode: push
   when:
   - not local
-  - tar.stat.exists
+  - binary.stat.exists
   register: fetch
 
-- name: "Load Check {{ archive.name }}-docker.tar to docker images"
+- name: "Load Check {{ docker_image.binary }} to docker images"
   docker_image:
-    name: "{{ archive.image }}"
-    load_path: "{{ archive_dir }}/{{ archive.name }}-docker.tar"
-  when: (tar.stat.exists | bool) or (fetch.changed | bool)
+    name: "{{ docker_image.id }}"
+    load_path: "{{ archive_dir }}/{{ docker_image.binary }}"
+  when: (binary.stat.exists | bool) or (fetch.changed | bool)
 
-- name: "Archive {{ archive.name }}"
+- name: "Archive {{ docker_image.binary }}"
   docker_image:
-    name: "{{ archive.image }}"
-    archive_path: "{{ reqs_dir }}/{{ archive.name }}-docker.tar"
+    name: "{{ docker_image.id }}"
+    archive_path: "{{ reqs_dir }}/{{ docker_image.binary }}"
     pull: true
-  when: (local) and (not tar.stat.exists | bool)
+  when: local and (not binary.stat.exists | bool)

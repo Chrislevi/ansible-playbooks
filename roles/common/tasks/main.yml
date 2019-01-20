@@ -1,7 +1,20 @@
+- name: "Check if registry on deployer"
+  set_fact:
+    registry_ip: {{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}
+  when:
+  - "'localhost' in registry_host"
+
+- name: "Check if registry on remote"
+  set_fact:
+    registry_ip: {{ hostvars[groups['registry'][0]]['ansible_host'] }}
+  when:
+  - "'localhost' not in registry_host"
+  - hostvars[groups['registry'][0]]['ansible_host'] is defined
+
 - name: "Configure Registry DNS"
   lineinfile:
     path: /etc/hosts
-    line: "{{ hostvars[groups['deployer'][0]]['ansible_default_ipv4']['address'] }}  {{ registry_hostname }}"
+    line: "{{ registry_ip }}  {{ registry_hostname }}"
 
 - name: "Install common packages"
   package:
@@ -9,3 +22,6 @@
     state: present
   loop:
     - "{{ common_packages }}"
+
+- name: "Install Docker"
+  import_playbook: ./docker-install.yml

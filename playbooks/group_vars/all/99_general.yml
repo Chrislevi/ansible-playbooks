@@ -1,8 +1,12 @@
 # ------------------------------------------ General -------------------------------------------- #
-docker_archive: true  # Archive containers
+
+become: True
 
 work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
 reqs_dir: "{{ work_dir }}/reqs"
+data_dir: "/DATA"
+compose_dir: "{{ data_dir }}/compose/{{ role_path | basename }}"
+compose_api_version: "3.2"
 
 # Internet connectivity check
 internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 0  && echo True') }}"
@@ -16,13 +20,15 @@ common_packages:
 #------------------------------------------- Docker -----------------------------------------------#
 # Registry
 registry_hostname: registry
+registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
+registry_address: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
 registry_port: 5005
 s3_storage:
   enabled: false
   access_key: ""
   secret_key: ""
 
-
+ansible_python_interpreter: "/usr/bin/env python"
 # Docker containers to be archived
 docker_archives:
   - { name: "{{ juseppe_container_name }}", image: "{{ juseppe_container_image }}" }

@@ -1,0 +1,33 @@
+version: "{{ compose_api_version }}"
+services:
+
+{% for image in images %}
+  {{ image.name }}:
+    image: {{ image.prefix }}:{{ image.tag }}
+    restart: {{ image.restart }}
+  {% if image.ports is defined %}
+    ports:
+    {% for port in image.ports %}
+    - {{ port }}
+    {% endfor %}
+  {% endif %}
+  {%- if image.environment is defined %}
+    environment:
+    {% for env in image.environment %}
+    - {{ env }}
+    {% endfor %}
+  {% endif %}
+  {% if image.volumes is defined %}
+    volumes:
+    {% for vol in image.volumes %}
+    - {{ vol }}
+    {% endfor %}
+  {% endif %}
+  {% if image.depends_on is defined %}
+    depends_on:
+    {% for dep in image.depends_on %}
+    - {{ dep }}
+    {% endfor %}
+  {% endif %}
+
+{% endfor %}

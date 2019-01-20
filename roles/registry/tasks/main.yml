@@ -1,0 +1,49 @@
+# - name: "SET_FACTS"
+#   set_fact:
+#     docker_image:
+#       hostname: "{{ image.name }}"
+#       ports: "{{ image.ports }}"
+#       id: "{{ image.prefix }}:{{ image.tag }}"
+#       binary: "{{ image.name }}-{{ image.tag }}-{{ ansible_date_time.date }}-tar.gz"
+
+- name: "Archive docker image"
+  include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
+  with_items:
+  - "{{ images }}"
+  loop_control:
+    loop_var: image
+
+#- meta: end_play
+- name: "Create compose dir -> {{ compose_dir }}"
+  file:
+    path: "{{ compose_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+
+- name: "Deploy compose files"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ compose_dir }}/{{ item }}"
+    lstrip_blocks: true
+  with_items:
+  - docker-compose.yml
+  tags:
+  - compose
+
+- name: "Stop containers"
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    state: absent
+  register: compose
+
+- name: "Start containers"
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    remove_orphans: true
+    state: present
+    restarted: true
+  register: compose
+
+- name: "Output execution"
+  debug:
+    msg: "{{ compose }}"

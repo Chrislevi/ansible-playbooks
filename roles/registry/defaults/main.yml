@@ -1,0 +1,21 @@
+images:
+  - name: "gui"
+    restart: always
+    prefix: "konradkleine/docker-registry-frontend"
+    tag: "v2"
+    ports:
+      - "9090:80"
+    environment:
+      - 'ENV_DOCKER_REGISTRY_HOST=localhost'
+      - 'ENV_DOCKER_REGISTRY_PORT=5000'
+    depends_on:
+      - registry
+
+  - name: "registry"
+    restart: always
+    prefix: "registry"
+    tag: "2"
+    ports:
+      - "{{ registry_port }}:5000"
+    volumes:
+      - './data:/var/lib/registry'

@@ -1,1 +1,3 @@
 .vagrant
+reqs
+.ansible_venv
