@@ -42,7 +42,6 @@
     dest: "/etc/docker/{{ item }}"
   with_items:
     - daemon.json
-  when: cj_nexus | bool
 
 - name: "start docker service"
   service:

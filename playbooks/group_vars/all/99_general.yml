@@ -21,7 +21,6 @@ common_packages:
 # Registry
 registry_hostname: registry
 registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
-registry_address: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
 registry_port: 5005
 s3_storage:
   enabled: false

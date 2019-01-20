@@ -1,12 +1,12 @@
 - name: "Check if registry on deployer"
   set_fact:
-    registry_ip: {{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}
+    registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
   when:
   - "'localhost' in registry_host"
 
 - name: "Check if registry on remote"
   set_fact:
-    registry_ip: {{ hostvars[groups['registry'][0]]['ansible_host'] }}
+    registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_host'] }}"
   when:
   - "'localhost' not in registry_host"
   - hostvars[groups['registry'][0]]['ansible_host'] is defined
@@ -18,10 +18,11 @@
 
 - name: "Install common packages"
   package:
-    name: "{{ iten }}"
+    name: "{{ item }}"
     state: present
   loop:
     - "{{ common_packages }}"
+  when: "'local' not in inventory_hostname"
 
 - name: "Install Docker"
-  import_playbook: ./docker-install.yml
+  import_tasks: ./docker-install.yml

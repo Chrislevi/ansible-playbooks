@@ -1,0 +1,11 @@
+---
+- hosts: all
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: common}
+
+- hosts: registry
+  gather_facts: yes
+  roles:
+    - { role: registry }
