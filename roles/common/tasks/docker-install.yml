@@ -1,6 +1,7 @@
 ---
 - block:
-    - apt_key:
+    - name: "Add apy key"
+      apt_key:
         data: "{{ lookup('file', 'docker-apt-key') }}"
         state: present
 
@@ -8,6 +9,7 @@
       apt_repository:
         repo: 'deb {{ docker_repo }} ubuntu-{{ ansible_distribution_release }} main'
         state: present
+
   when: internet_available | bool
 
 - name: "Install docker"

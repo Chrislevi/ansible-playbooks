@@ -1,4 +1,10 @@
 ---
+- hosts: deploy
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: archive_binary }
+
 - hosts: all
   gather_facts: yes
   become: yes

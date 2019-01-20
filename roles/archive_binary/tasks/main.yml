@@ -13,4 +13,6 @@
     validate_certs: no
   with_items:
   - "{{ binaries }}"
-  when: internet_available | bool
+  when:
+  - internet_available | bool
+  - binaries is defined

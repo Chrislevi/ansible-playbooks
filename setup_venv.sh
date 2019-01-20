@@ -4,10 +4,29 @@ WORK_DIR=$(pwd)
 REQS_DIR=${WORK_DIR}/reqs/pip2pi
 VENV_DIR=${WORK_DIR}/.ansible_venv
 
-apt install -y python3 python3-pip libffi-dev python-dev virtualenv build-essential
+sudo apt install -y python-pip \
+		    python-dev \
+                    libffi-dev \
+                    libssl-dev \
+                    libxml2-dev \
+                    libxslt1-dev \
+                    libjpeg8-dev \
+                    zlib1g-dev \
+                    python3 \
+                    python3-pip \
+                    virtualenv \
+                    build-essential \
+                    python3-apt \
+                    python-apt \
+                    sshpass \
+                    openssl
 
-virtualenv -p python3 ${VENV_DIR}
-source ${VENV_DIR}/bin/activate
+rm -f /usr/bin/python
+ln -s /usr/bin/python3.5 /usr/bin/python
+
+#rm -rf ${VENV_DIR} || /bin/true
+#virtualenv -p python3 ${VENV_DIR}
+#source ${VENV_DIR}/bin/activate
 pip3 install pip2pi
 
 pip2pi ${REQS_DIR} -r requirements.txt
