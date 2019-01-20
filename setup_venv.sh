@@ -1,9 +1,16 @@
 #!/bin/bash
 set -x
-pip install virtualenv
+WORK_DIR=$(pwd)
+REQS_DIR=${WORK_DIR}/reqs/pip2pi
+VENV_DIR=${WORK_DIR}/.ansible_venv
 
-virtualenv -p python3.7 .ansible_venv
-source .ansible_venv/bin/activate
+apt install -y python3 python3-pip libffi-dev python-dev virtualenv build-essential
 
-pip install docker docker-compose ansible
-export ANSIBLE_PYTHON_INTERPRETER=${PWD}/.ansible_venv/bin/python3.7
+virtualenv -p python3 ${VENV_DIR}
+source ${VENV_DIR}/bin/activate
+pip3 install pip2pi
+
+pip2pi ${REQS_DIR} -r requirements.txt
+
+mkdir -p ${REQS_DIR}
+pip3 install -U -r requirements.txt
