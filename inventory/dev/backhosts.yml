@@ -20,14 +20,39 @@ consul:
   children:
     vagrant:
 
+# swarm-cluster:
+#   children:
+#     swarm-managers:
+#     swarm-workers:
+
+# swarm-init-master:
+#   children:
+#     vagrant:
+#       hosts:
+#         swarm-manager-01
+
+# swarm-managers:
+#   children:
+#     vagrant:
+#       hosts:
+#         swarm-manager-[01:03]
+
+swarm-workers:
+  children:
+    vagrant:
+      # hosts:
+      #   swarm-worker-01
+
 vagrant:
   hosts:
-    node01:
+    swarm-manager-01:
       ansible_host: 10.100.0.11
-    node02:
+    swarm-manager-02:
       ansible_host: 10.100.0.12
-    node03:
+    swarm-manager-03:
       ansible_host: 10.100.0.13
+    swarm-worker-01:
+      ansible_host: 10.100.0.21
   vars:
     ansible_ssh_user: vagrant
     ansible_ssh_pass: vagrant

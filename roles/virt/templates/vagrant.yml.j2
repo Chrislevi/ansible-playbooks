@@ -1,6 +1,7 @@
 ---
-{% for host in groups['virt-nodes'] %}
+{% for host in groups['vagrant'] %}
 {%   set ip = hostvars[host].netid|string + hostvars[host].id|string %}
+{%   set ip = hostvars[host].ansible_host %}
 - hostname: {{ host }}
   box_name: {{ hostvars[host]['box_name'] }}
   box_user: {{ hostvars[host]['box_user'] }}

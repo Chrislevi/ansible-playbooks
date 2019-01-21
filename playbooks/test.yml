@@ -1,6 +1,9 @@
 ---
-- hosts: ubu01
+- hosts: swarm-workers
+  gather_facts: true
   become: yes
   tasks:
-  - debug: 
-      msg: "{{ hostvars[inventory_hostname].netid }}"
+  - debug:
+      msg: "{{ item.key }} {{ item.value }}"
+    with_dict:
+    - "{{ docker_kernel_options }}"

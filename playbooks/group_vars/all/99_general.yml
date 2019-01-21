@@ -2,6 +2,9 @@
 
 become: True
 
+domain_name: "default.local"
+
+vagrant_dir: "{{ work_dir }}/.vagrant"
 work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
 reqs_dir: "{{ work_dir }}/reqs"
 data_dir: "/DATA"
@@ -17,18 +20,21 @@ common_packages:
   - python3-pip
   - apt-transport-https
   - ca-certificates
-#------------------------------------------- Docker -----------------------------------------------#
-# Registry
-registry_hostname: registry
-registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
-registry_port: 5005
+  - curl
+  - gnupg2
+  - software-properties-common
+  - bridge-utils
+  - tar
+  - wget
+  - git
+  - unzip
+  - ntp
+  - python-pip
+  - python3-pip
+
 s3_storage:
   enabled: false
   access_key: ""
   secret_key: ""
 
 ansible_python_interpreter: "/usr/bin/env python"
-# Docker containers to be archived
-docker_archives:
-  - { name: "{{ juseppe_container_name }}", image: "{{ juseppe_container_image }}" }
-  - { name: "{{ gitlab_container_name }}", image: "{{ gitlab_container_image }}" }

@@ -1,0 +1,3 @@
+registry_hostname: registry
+registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
+registry_port: "5005"

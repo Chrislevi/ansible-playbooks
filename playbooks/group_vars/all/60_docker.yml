@@ -1,13 +1,23 @@
 docker_group: docker
-docker_group_members: []
-#docker_version_major: 1
-#docker_version_minor: 2
-#docker_version_patch: 12
-#docker_version: "{{ docker_version_major }}.{{ docker_version_minor }}.{{ docker_version_patch }}"
+docker_group_members: ["user", "vagrant"]
+docker_sockets: "-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375"
+docker_packages:
+  - docker-ce
+  - docker-compose
 
-docker_systemd_dir: /etc/systemd/system/docker.service.d
+docker_unpackages:
+  - docker
+  - docker-engine
+  - docker.io
+  - containerd
+  - docker-ce
 
-docker_sock: "/var/run/docker.sock"
 docker_keyserver: hkp://p80.pool.sks-keyservers.net:80
 docker_repo_key: "58118E89F3A912897C070ADBF76221572C52609D"
-docker_repo: http://apt.dockerproject.org/repo
+docker_repo: https://download.docker.com/linux/ubuntu
+
+docker_kernel_options:
+  net.ipv4.ip_forward: 1
+  net.bridge.bridge-nf-call-arptables: 1
+  net.bridge.bridge-nf-call-ip6tables: 1
+  net.bridge.bridge-nf-call-iptables: 1

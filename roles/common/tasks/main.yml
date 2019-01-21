@@ -1,3 +1,5 @@
+- setup:
+
 - name: "Check if registry on deployer"
   set_fact:
     registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
