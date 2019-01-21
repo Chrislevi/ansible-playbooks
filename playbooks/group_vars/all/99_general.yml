@@ -9,10 +9,13 @@ work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
 reqs_dir: "{{ work_dir }}/reqs"
 data_dir: "/DATA"
 compose_dir: "{{ data_dir }}/compose/{{ role_path | basename }}"
-compose_api_version: "3.2"
+compose_api_version: "3.4"
 
 # Internet connectivity check
 internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 0  && echo True') }}"
+
+python_packages:
+  - jsondiff
 
 common_packages:
   - htop
