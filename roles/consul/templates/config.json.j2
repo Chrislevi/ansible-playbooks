@@ -1,0 +1,14 @@
+{
+  "data_dir": "/consul/data",
+  "datacenter": "{{ consul_datacenter }}",
+  "node_name": "{{ inventory_hostname }}",
+  "server" : true,
+  "ui" : true,
+  "disable_update_check": true,
+  "log_level": "INFO",
+  "dns_config": {
+    "service_ttl": {
+      "service": "10s"
+    }
+  }
+}

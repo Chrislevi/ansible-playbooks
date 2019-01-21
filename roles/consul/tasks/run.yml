@@ -1,0 +1,37 @@
+# docker network create -d overlay --opt com.docker.network.swarm.name=consul consul --subnet 172.30.22.0/28
+
+- name: "Purge | remove consul stack"
+  docker_stack:
+    state: absent
+    name: "{{ consul_stack_name }}"
+    compose_file: "{{ compose_dir }}/docker-compose.yml"
+  when: purge
+
+- name: "Purge | remove docker volumes"
+  docker_volume:
+    name: "{{ consul_docker_vol }}"
+    state: absent
+    force: yes
+  when: purge
+
+- name: "Configure | Create compose dir -> {{ compose_dir }}"
+  file:
+    path: "{{ compose_dir }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+
+- name: "Configure | Deploy compose files"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ compose_dir }}/{{ item }}"
+    lstrip_blocks: true
+  with_items:
+  - docker-compose.yml
+  tags:
+  - compose
+
+- name: "Run | Deploy consul stack"
+  docker_stack:
+    state: present
+    name: "{{ consul_stack_name }}"
+    compose_file: "{{ compose_dir }}/docker-compose.yml"

@@ -1,5 +1,9 @@
 ---
 - hosts: deploy
+  tasks:
+  - setup:
+
+- hosts: deploy
   gather_facts: yes
   become: yes
   roles:

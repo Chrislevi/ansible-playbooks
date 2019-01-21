@@ -1,0 +1,34 @@
+#--------------------- Consul ------------------#
+consul_datacenter: "default"
+consul_data_dir: "/consul/data"
+consul_config_dir: "/etc/consul"
+consul_api_token: "SECR3T"
+consul_log_level: "INFO"
+consul_replica: 3
+consul_version: 1.2.4
+consul_stack_name: "consul"
+consul_docker_vol: "consul"
+
+images:
+  - name: "consul"
+    prefix: "consul"
+    tag: "{{ consul_version }}"
+    ports: 8500:8500
+    environment:
+      - CONSUL_ALLOW_PRIVILEGED_PORTS=53
+      - CONSUL_BIND_INTERFACE=eth0
+      - CONSUL_HTTP_TOKEN={{ consul_api_token }}
+    volumes:
+      - "{{ consul_docker_vol }}:/consul/data"
+      - "{{ consul_config_dir }}/config.json:/consul/config.json"
+    command: "agent -ui -dns-port=53 -config-file /consul/config.json -data-dir /consul/data -server -client 0.0.0.0 -bootstrap-expect=3 -retry-join consul.cluster"
+
+  - name: "registrator"
+    prefix: "gliderlabs/registrator"
+    tag: "master"
+    environment:
+      - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock
+    command:
+      - "-internal consul://consul.cluster:8500"

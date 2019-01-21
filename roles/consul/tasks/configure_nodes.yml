@@ -1,0 +1,18 @@
+- name: "Configure | Create consul dirs"
+  file:
+    dest: "{{ item }}"
+    state: directory
+  with_items:
+    - "{{ consul_config_dir }}"
+
+- name: "Configure | Deploy consul config"
+  template:
+    lstrip_blocks: true
+    src: "{{ item }}.j2"
+    dest: "{{ consul_config_dir }}/{{ item }}"
+  with_items:
+   - config.json
+
+- name: "Configure | Install python deps"
+  pip:
+    name: "{{ python_packages }}"

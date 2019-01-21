@@ -1,30 +1,45 @@
 ---
 - block:
-    - name: "Add apy key"
+    - name: "Install | Add apy key"
       apt_key:
-        data: "{{ lookup('file', 'docker-apt-key') }}"
+        data: "{{ lookup('file', 'docker-pgp-key') }}"
         state: present
 
-    - name: "Add repository"
+    - name: "Install | Add repository"
       apt_repository:
-        repo: 'deb {{ docker_repo }} ubuntu-{{ ansible_distribution_release }} main'
+        repo: 'deb [arch=amd64] {{ docker_repo }} {{ ansible_distribution_release }} stable'
         state: present
 
   when: internet_available | bool
 
-- name: "Install docker"
+# - meta: end_play
+- name: "Install | Uninstall previous old Docker bins"
+  package:
+    name: "{{ item }}"
+    state: absent
+  ignore_errors: yes
+  with_items:
+  - "{{ docker_unpackages }}"
+
+
+- name: "Install | Install Docker"
   package:
     name: "{{ item }}"
     state: latest
   with_items:
-    - docker.io
-    - docker-compose
+  - "{{ docker_packages }}"
   register: result
   until: result is succeeded
   retries: 5
   delay: 10
 
-- name: "Add users to the docker group"
+- name: "Install | Pip requiremnets"
+  pip:
+    name: "{{ item }}"
+  with_items:
+  - docker
+
+- name: "Install | Add users to the Docker group"
   user:
     name:   "{{ item }}"
     groups: "{{ docker_group }}"
@@ -32,26 +47,56 @@
   with_items: "{{ docker_group_members }}"
   when: docker_group_members is defined
 
-- name: "Create docker client dir"
+- name: "Install | Create Docker client dir"
   file:
-    name: "/etc/docker"
+    name: "{{ item }}"
     state: directory
+    owner: root
     mode: "u=rwx,g=rx,o=rx"
+  with_items:
+  - "/etc/systemd/system/docker.service.d"
+  - "/etc/docker"
 
-- name: "Deploy Docker client conf"
+- name: "Configure | Docker client conf"
   template:
     src: "{{ item }}.j2"
     dest: "/etc/docker/{{ item }}"
   with_items:
     - daemon.json
 
-- name: "start docker service"
-  service:
+- name: "Configure | Configure SYSCTL"
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    sysctl_set: yes
+    reload: yes
+  with_dict:
+  - "{{ docker_kernel_options }}"
+
+- name: "Configure | Set Docker daemon options"
+  copy:
+    content: |
+      [Service]
+      Environment="DOCKER_OPTS={{ docker_sockets }}"
+    dest: /etc/systemd/system/docker.service.d/env.conf
+    owner: root
+    mode: 0755
+
+- name: "Configure | Link DOCKER_OPTS"
+  lineinfile:
+    dest: /lib/systemd/system/docker.service
+    regexp: "ExecStart=/usr/bin/dockerd -H fd://"
+    line: "ExecStart=/usr/bin/dockerd -H fd:// $DOCKER_OPTS"
+
+- name: "Configure | Restart Docker service"
+  systemd:
+    daemon_reload: yes
     name: docker
     state: restarted
     enabled: yes
 
-- name: "wait until docker service is up"
+- name: "Configure | WaitFor Docker service"
   wait_for:
-    path: "{{ docker_sock }}"
+    port: 2375
     delay: 10

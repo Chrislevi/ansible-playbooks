@@ -1,0 +1,10 @@
+---
+- hosts: deploy
+  tasks:
+  - setup:
+
+- hosts: swarm-cluster
+  gather_facts: yes
+  become: yes
+  roles:
+    - { role: docker-swarm }

@@ -6,7 +6,7 @@
   set_fact:
     docker_image:
       hostname: "{{ image.name }}"
-      ports: "{{ image.ports }}"
+      ports: "{{ image.ports if image.ports is defined else '' }}"
       id: "{{ image.prefix }}:{{ image.tag }}"
       binary: "{{ image.name }}-{{ image.tag }}-{{ ansible_date_time.date }}-tar.gz"
 

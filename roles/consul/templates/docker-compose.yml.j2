@@ -1,0 +1,83 @@
+---
+version: "{{ compose_api_version }}"
+
+networks:
+  consul:
+    external: true
+
+volumes:
+  {{ consul_docker_vol }}:
+
+services:
+{% for image in images %}
+  {% if 'consul' in image.name %}
+  {{ image.name }}:
+    image: {{ image.prefix }}:{{ image.tag }}
+    {% if image.volumes is defined %}
+    volumes:
+      {% for vol in image.volumes %}
+    - {{ vol }}
+      {% endfor %}
+    {% endif %}
+    {% if image.ports is defined %}
+    ports:
+      - target: 8500
+        published: 8500
+        mode: host
+      - target: 53
+        published: 53
+        mode: host
+    {% endif %}
+    {% if image.environment is defined %}
+    environment:
+      {% for env in image.environment %}
+    - {{ env }}
+      {% endfor %}
+    {% endif %}
+    {% if image.command is defined %}
+    command: "{{ image.command }}"
+    {% endif %}
+    networks:
+      consul:
+        aliases:
+          - consul.cluster
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints: [node.role ==  manager]
+  {% endif %}
+
+  {% if 'registrator' in image.name %}
+  {{ image.name }}:
+    image: {{ image.prefix }}:{{ image.tag }}
+    {% if image.volumes is defined %}
+    volumes:
+      {% for vol in image.volumes %}
+    - {{ vol }}
+      {% endfor %}
+    {% endif %}
+    {% if image.ports is defined %}
+    ports:
+      {% for port in image.ports %}
+    - {{ port }}
+      {% endfor %}
+    {% endif %}
+    {% if image.environment is defined %}
+    environment:
+      {% for env in image.environment %}
+    - {{ env }}
+      {% endfor %}
+    {% endif %}
+    {% if image.command is defined %}
+    command:
+      {% for cmd in image.command %}
+    - {{ cmd }}
+      {% endfor %}
+    {% endif %}
+    networks:
+      - consul
+    deploy:
+      mode: global
+  {% endif %}
+{% endfor %}

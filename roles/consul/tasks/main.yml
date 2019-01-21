@@ -1,0 +1,28 @@
+---
+# - set_fact:
+#     test: |
+#       {% for port in images[0].ports %}
+#       {% if port|length > 1 %}
+#       "{{ port|length }}"
+#       {% endif %}
+#       {% endfor %}
+# - debug:
+#     #msg: "{{ images[0].ports }}"
+#     msg: "{{ test }}"
+
+# - name: "Archive | archive docker images"
+#   include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
+#   with_items:
+#   - "{{ images }}"
+#   loop_control:
+#     loop_var: image
+
+- include_tasks: ./configure_nodes.yml
+  when:
+  - manager is defined
+  - manager
+
+- include_tasks: ./run.yml
+  when:
+  - master is defined
+  - master
