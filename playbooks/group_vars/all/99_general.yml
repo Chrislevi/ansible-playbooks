@@ -16,6 +16,7 @@ internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 
 
 python_packages:
   - jsondiff
+  - docker
 
 common_packages:
   - htop

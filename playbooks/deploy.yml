@@ -6,8 +6,10 @@
 - hosts: deploy
   gather_facts: yes
   become: yes
-  roles:
-    - { role: archive_binary }
+  tasks:
+  - include_role:
+      name: archive_binary
+    when: internet_available | bool
 
 - hosts: all
   gather_facts: yes
@@ -19,3 +21,15 @@
   gather_facts: yes
   roles:
     - { role: registry }
+
+- hosts: swarm-cluster
+  become: yes
+  gather_facts: yes
+  roles:
+    - { role: docker-swarm }
+
+- hosts: deploy:swarm-managers
+  become: true
+  gather_facts: yes
+  roles:
+    - { role: consul, purge: false }

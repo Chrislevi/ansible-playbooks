@@ -10,12 +10,12 @@
 #     #msg: "{{ images[0].ports }}"
 #     msg: "{{ test }}"
 
-# - name: "Archive | archive docker images"
-#   include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
-#   with_items:
-#   - "{{ images }}"
-#   loop_control:
-#     loop_var: image
+- name: "Archive | archive docker images"
+  include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
+  with_items:
+  - "{{ images }}"
+  loop_control:
+    loop_var: image
 
 - include_tasks: ./configure_nodes.yml
   when:

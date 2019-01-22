@@ -12,7 +12,3 @@
     dest: "{{ consul_config_dir }}/{{ item }}"
   with_items:
    - config.json
-
-- name: "Configure | Install python deps"
-  pip:
-    name: "{{ python_packages }}"

@@ -7,7 +7,7 @@ consul_log_level: "INFO"
 consul_replica: 3
 consul_version: 1.2.4
 consul_stack_name: "consul"
-consul_docker_vol: "consul"
+consul_docker_vol: "{{ consul_stack_name }}"
 
 images:
   - name: "consul"

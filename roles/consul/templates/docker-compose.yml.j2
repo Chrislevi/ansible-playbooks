@@ -2,7 +2,7 @@
 version: "{{ compose_api_version }}"
 
 networks:
-  consul:
+  {{ consul_stack_name }}:
     external: true
 
 volumes:

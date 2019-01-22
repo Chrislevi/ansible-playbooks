@@ -24,7 +24,9 @@
     state: present
   loop:
     - "{{ common_packages }}"
-  when: "'local' not in inventory_hostname"
+  when: "'apt' in ansible_pkg_mgr"
 
 - name: "Install Docker"
-  import_tasks: ./docker-install.yml
+  include_tasks: ./docker-install.yml
+  static: no
+  when: "'apt' in ansible_pkg_mgr"

@@ -5,12 +5,13 @@ docker_packages:
   - docker-ce
   - docker-compose
 
+docker_swarm_subnet: 172.30.1.0/24
+
 docker_unpackages:
   - docker
   - docker-engine
   - docker.io
   - containerd
-  - docker-ce
 
 docker_keyserver: hkp://p80.pool.sks-keyservers.net:80
 docker_repo_key: "58118E89F3A912897C070ADBF76221572C52609D"
