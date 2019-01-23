@@ -36,8 +36,8 @@
     driver: overlay
     driver_options:
       com.docker.network.swarm.name: "{{ consul_stack_name }}"
-    ipam_options:
-      subnet: "{{ docker_swarm_subnet }}"
+    # ipam_options:
+    #   subnet: "{{ docker_swarm_subnet }}"
 
 - name: "Run | Deploy consul stack"
   docker_stack:

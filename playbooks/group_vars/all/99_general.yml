@@ -17,6 +17,7 @@ internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 
 python_packages:
   - jsondiff
   - docker
+  - dnspython
 
 common_packages:
   - htop
@@ -35,6 +36,9 @@ common_packages:
   - ntp
   - python-pip
   - python3-pip
+
+registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
+#registry_host: "{{ lookup('dig', ansible_host) }}"
 
 s3_storage:
   enabled: false

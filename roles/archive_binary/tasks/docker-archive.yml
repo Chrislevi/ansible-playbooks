@@ -8,7 +8,7 @@
       hostname: "{{ image.name }}"
       ports: "{{ image.ports if image.ports is defined else '' }}"
       id: "{{ image.prefix }}:{{ image.tag }}"
-      binary: "{{ image.name }}-{{ image.tag }}-{{ ansible_date_time.date }}-tar.gz"
+      binary: "{{ image.name }}-{{ image.tag }}.image.tar"
 
 - block:
   - name: "Docker archive | Set DOCKER_IMAGE directory -> {{ reqs_dir }}"

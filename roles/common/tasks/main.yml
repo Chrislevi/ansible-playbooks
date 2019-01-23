@@ -1,4 +1,18 @@
-- setup:
+- name: "Install common packages"
+  package:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - "{{ common_packages }}"
+  when: "'apt' in ansible_pkg_mgr"
+
+- name: "Install Docker"
+  include_tasks: ./docker-install.yml
+  static: no
+  when: "'apt' in ansible_pkg_mgr"
+
+- debug:
+    msg: "{{ hostvars[groups['registry'][0]]['registry_host'] }}"
 
 - name: "Check if registry on deployer"
   set_fact:
@@ -17,16 +31,3 @@
   lineinfile:
     path: /etc/hosts
     line: "{{ registry_ip }}  {{ registry_hostname }}"
-
-- name: "Install common packages"
-  package:
-    name: "{{ item }}"
-    state: present
-  loop:
-    - "{{ common_packages }}"
-  when: "'apt' in ansible_pkg_mgr"
-
-- name: "Install Docker"
-  include_tasks: ./docker-install.yml
-  static: no
-  when: "'apt' in ansible_pkg_mgr"
