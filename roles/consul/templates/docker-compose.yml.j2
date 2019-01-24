@@ -2,7 +2,7 @@
 version: "{{ compose_api_version }}"
 
 networks:
-  {{ consul_stack_name }}:
+  {{ docker_swarm_overlay.name }}:
     external: true
 
 volumes:
@@ -10,7 +10,7 @@ volumes:
 
 services:
 {% for image in images %}
-  {% if 'consul' in image.name %}
+  {% if 'consul' in image.prefix %}
   {{ image.name }}:
     image: {{ image.prefix }}:{{ image.tag }}
     {% if image.volumes is defined %}
@@ -51,14 +51,6 @@ services:
         published: 8302
         mode: host
         protocol: udp
-      - target: 8600
-        published: 8600
-        mode: host
-        protocol: udp
-      - target: 8600
-        published: 8600
-        mode: host
-        protocol: tcp
     {% endif %}
     {% if image.environment is defined %}
     environment:
@@ -70,7 +62,7 @@ services:
     command: "{{ image.command }}"
     {% endif %}
     networks:
-      {{ consul_stack_name }}:
+      {{ docker_swarm_overlay.name }}:
         aliases:
           - consul.cluster
     deploy:
@@ -108,8 +100,10 @@ services:
       {% endfor %}
     {% endif %}
     networks:
-      - {{ consul_stack_name }}
+      - {{ docker_swarm_overlay.name }}
     deploy:
       mode: global
+      placement:
+        constraints: [node.role ==  manager]
   {% endif %}
 {% endfor %}

@@ -1,14 +1,24 @@
+---
 - name: "Configure | Create {{ stack_name }} dirs"
+  become: True
   file:
     dest: "{{ item }}"
     state: directory
+    owner: "{{ ansible_user }}"
   with_items:
     - "{{ config_dir }}"
 
-- name: "Configure | Deploy {{ stack_name }} config"
+- name: "Configure | Deploy config"
   template:
     lstrip_blocks: true
     src: "{{ item }}.j2"
     dest: "{{ config_dir }}/{{ item }}"
   with_items:
-   - config.json
+   - config.yml
+
+- name: "Configure | Copy context files"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ config_dir }}/{{ item }}"
+  with_items:
+  - plugins.txt

@@ -1,4 +1,5 @@
 - name: "Install common packages"
+  become: true
   package:
     name: "{{ item }}"
     state: present
@@ -12,7 +13,7 @@
   when: "'apt' in ansible_pkg_mgr"
 
 - debug:
-    msg: "{{ hostvars[groups['registry'][0]]['registry_host'] }}"
+    msg: "{{ registry_host }}"
 
 - name: "Check if registry on deployer"
   set_fact:

@@ -1,9 +1,7 @@
 ---
-- hosts: swarm-workers
+- hosts: swarm-managers
   gather_facts: true
   become: yes
   tasks:
   - debug:
-      msg: "{{ item.key }} {{ item.value }}"
-    with_dict:
-    - "{{ docker_kernel_options }}"
+      msg: "{{ ansible_play_hosts }}"

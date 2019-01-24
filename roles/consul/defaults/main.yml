@@ -1,18 +1,19 @@
 #--------------------- Consul ------------------#
+config_dir: "{{ consul_config_dir | default(compose_dir) }}"
+data_dir: "{{ consul_data_dir | default('/consul/data') }}"
+replica: "{{ consul_replica | default('global') }}"
+version: "{{ consul_version | default('1.2.4') }}"
+stack_name: "{{ consul_stack_name | default('consul') }}"
+
 consul_datacenter: "default"
-consul_data_dir: "/consul/data"
-consul_config_dir: "/etc/consul"
 consul_api_token: "SECR3T"
 consul_log_level: "INFO"
-consul_replica: 3
-consul_version: 1.2.4
-consul_stack_name: "consul"
-consul_docker_vol: "{{ consul_stack_name }}"
+consul_docker_vol: "{{ stack_name }}"
 
 images:
   - name: "consul"
     prefix: "consul"
-    tag: "{{ consul_version }}"
+    tag: "{{ version }}"
     ports: 8500:8500
     environment:
       - CONSUL_ALLOW_PRIVILEGED_PORTS="53"
@@ -20,8 +21,8 @@ images:
       - CONSUL_HTTP_TOKEN={{ consul_api_token }}
     volumes:
       - "{{ consul_docker_vol }}:/consul/data"
-      - "{{ consul_config_dir }}/config.json:/consul/config.json"
-    command: "agent -ui -dns-port=53 -config-file /consul/config.json -data-dir /consul/data -server -serf-lan-bind=0.0.0.0 -client 0.0.0.0 -bootstrap-expect=3 -retry-join consul.cluster"
+      - "{{ config_dir }}/config.json:/consul/config.json"
+    command: "agent -ui -config-file /consul/config.json -data-dir /consul/data -serf-lan-bind=0.0.0.0 -bootstrap-expect={{ groups['swarm-managers']|length }} -retry-join consul.cluster"
 
   - name: "registrator"
     prefix: "gliderlabs/registrator"

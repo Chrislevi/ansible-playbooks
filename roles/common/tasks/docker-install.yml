@@ -39,6 +39,7 @@
 - name: "Install | Pip requiremnets"
   pip:
     name: "{{ item }}"
+    state: latest
   with_items:
   - "{{ python_packages }}"
 

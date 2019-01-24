@@ -15,7 +15,7 @@
   gather_facts: yes
   become: yes
   roles:
-    - { role: common}
+    - { role: common }
 
 - hosts: registry
   gather_facts: yes
@@ -28,8 +28,14 @@
   roles:
     - { role: docker-swarm }
 
-- hosts: deploy:swarm-managers
+- hosts: consul-nodes
   become: true
   gather_facts: yes
   roles:
     - { role: consul, purge: false }
+
+- hosts: jenkins-master
+  become:
+  gather_facts: yes
+  roles:
+    - { role: jenkins, purge: false }

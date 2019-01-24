@@ -6,7 +6,8 @@ docker_packages:
   - docker-compose
 
 docker_swarm_subnet: 172.30.1.0/24
-
+docker_swarm_overlay:
+  name: "swarm-network"
 docker_unpackages:
   - docker
   - docker-engine

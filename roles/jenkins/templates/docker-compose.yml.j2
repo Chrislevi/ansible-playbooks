@@ -1,0 +1,45 @@
+version: "{{ compose_api_version }}"
+
+networks:
+  {{ docker_swarm_overlay.name }}:
+    external: true
+
+services:
+{% for image in images %}
+  {% if 'jenkins' in image.prefix %}
+  {{ image.name }}:
+    image: {{ image.prefix }}:{{ image.tag }}
+    {% if image.dns is defined %}
+    dns: "{{ image.dns }}"
+    {% endif %}
+    {% if image.volumes is defined %}
+    volumes:
+      {% for vol in image.volumes %}
+    - {{ vol }}
+      {% endfor %}
+    {% endif %}
+    {% if image.ports is defined %}
+    ports:
+      {% for port in image.ports %}
+    - {{ port }}
+      {% endfor %}
+    {% endif %}
+    {% if image.environment is defined %}
+    environment:
+      {% for env in image.environment %}
+    - {{ env }}
+      {% endfor %}
+    {% endif %}
+    {% if image.command is defined %}
+    command: "{{ image.command }}"
+    {% endif %}
+    networks:
+      - {{ docker_swarm_overlay.name }} #}
+    deploy:
+      endpoint_mode: vip
+      replicas: 1 # FIXME cant get int "{{ replica }}"
+      mode: replicated
+      placement:
+        constraints: [node.role ==  worker]
+  {% endif %}
+{% endfor %}

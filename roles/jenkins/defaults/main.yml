@@ -1,0 +1,33 @@
+config_dir: "{{ jenkins_config_dir | default(compose_dir) }}"
+data_dir: "{{ jenkins_data_dir | default('/var/lib/jenkins') }}"
+replica: 1 # FIXME cant get int"{{ jenkins_replica | default(1) }}"
+version: "{{ jenkins_version | default('2.138.3') }}"
+stack_name: "{{ jenkins_stack_name | default('jenkins') }}"
+
+jenkins_admin_pass: "admin"
+jenkins_admin_user: "admin"
+
+images:
+  - name: "jenkins-master"
+    prefix: "odavid/my-bloody-jenkins"
+    tag: "{{ version }}"
+    dns: "{{ dns_server }}"
+    ports:
+      - '80:8080'
+      - '50000:50000'
+    environment:
+      - JAVA_OPTS_MEM='-Xmx1g'
+      # Disable hyper provision of slaves - docker plugin strategy is enough
+      - JAVA_OPTS_LOAD_STATS_CLOCK=''
+      - JENKINS_ENV_ADMIN_USER="{{ jenkins_admin_user }}"
+      - JENKINS_ENV_HOST_IP="{{ hostvars[inventory_hostname]['ansible_host'] }}"
+      - JENKINS_ENV_CONFIG_YML_URL=file:///config.yml
+      - JENKINS_ENV_QUIET_STARTUP_PERIOD=120
+      - JENKINS_ADMIN_PASSWORD="{{ jenkins_admin_pass }}"
+    # TODO FIXME No page found on plugin installs
+    #  - JENKINS_ENV_PLUGINS="badge,ghprb,nodelabelparameter,script-security"
+    volumes:
+      - "{{ config_dir }}/config.yml:/config.yml"
+      - "{{ data_dir }}/jenkins_home:/var/jenkins_home"
+      - "{{ data_dir }}/jenkins-workspace-home:/jenkins-workspace-home"
+      - '/var/run/docker.sock:/var/run/docker.sock'

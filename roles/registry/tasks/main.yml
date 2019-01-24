@@ -1,10 +1,11 @@
-# - name: "SET_FACTS"
-#   set_fact:
-#     docker_image:
-#       hostname: "{{ image.name }}"
-#       ports: "{{ image.ports }}"
-#       id: "{{ image.prefix }}:{{ image.tag }}"
-#       binary: "{{ image.name }}-{{ image.tag }}-{{ ansible_date_time.date }}-tar.gz"
+---
+- name: "Archive | Archive docker images to deployer"
+  run_once: true
+  include_tasks: "archive-images.yml"
+  with_items:
+  - "{{ images }}"
+  loop_control:
+    loop_var: image
 
 - name: "Archive docker image"
   include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
@@ -13,8 +14,8 @@
   loop_control:
     loop_var: image
 
-#- meta: end_play
 - name: "Create compose dir -> {{ compose_dir }}"
+  become: true
   file:
     path: "{{ compose_dir }}"
     state: directory
@@ -34,7 +35,9 @@
   docker_service:
     project_src: "{{ compose_dir }}"
     state: absent
+  ignore_errors: true
   register: compose
+  when: purge
 
 - name: "Start containers"
   docker_service:
@@ -43,7 +46,3 @@
     state: present
     restarted: true
   register: compose
-
-- name: "Output execution"
-  debug:
-    msg: "{{ compose }}"
