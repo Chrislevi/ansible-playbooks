@@ -1,0 +1,44 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require "yaml"
+
+VAGRANT_API_VERSION = "2"
+vagrant_dir         = File.expand_path(File.dirname(__FILE__))
+
+nodes = YAML.load( File.open(File.join( vagrant_dir, "hosts.yml"), File::RDONLY).read )
+#nodes        = config_file['nodes']
+
+Vagrant.configure(VAGRANT_API_VERSION) do |config|
+
+  nodes.each do |node|
+    config.vm.define node['hostname'] do |nodeconfig|
+      nodeconfig.vm.box      = node['box_name']
+      nodeconfig.vm.hostname = node['hostname']
+ #     config.ssh.username    = node['box_user']
+ #     config.ssh.password    = node['box_pass']
+
+      # Configure Network 
+      nodeconfig.vm.network 'private_network', ip: node['ip'].to_s
+      
+      # Provider config
+      node_ram = node['ram']
+      node_cpu = node['cpu']
+      nodeconfig.vm.provider 'virtualbox' do |vb|
+         vb.customize [
+          "modifyvm", :id,
+          "--ioapic", "on",
+          "--memory", node_ram.to_s,
+          "--cpus", node_cpu.to_s,
+          "--audio", "none",
+          "--nictype1", "virtio",
+          "--nictype2", "virtio",
+          "--nicpromisc2", "allow-all",
+          "--cableconnected2", "on",
+        ]
+      config.ssh.shell = "bash -c 'BASH_ENV=/etc/profile exec bash'"
+      config.vm.provision :shell, :path => "bootstrap-ubuntu.sh"
+      end
+    end
+  end
+end
