@@ -72,6 +72,40 @@ services:
         constraints: [node.role ==  manager]
   {% endif %}
 
+  {% if 'client' in image.name %}
+    image: {{ image.prefix }}:{{ image.tag }}
+    {% if image.volumes is defined %}
+    volumes:
+      {% for vol in image.volumes %}
+    - {{ vol }}
+      {% endfor %}
+    {% endif %}
+    {% if image.ports is defined %}
+    ports:
+      - target: 8500
+        published: 8500
+        mode: host
+    {% endif %}
+    {% if image.environment is defined %}
+    environment:
+      {% for env in image.environment %}
+    - {{ env }}
+      {% endfor %}
+    {% endif %}
+    {% if image.command is defined %}
+    command: "{{ image.command }}"
+    {% endif %}
+    networks:
+      {{ docker_swarm_overlay.name }}:
+        aliases:
+          - consul.cluster
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints: [node.role !=  manager]
+  {% endif %}
+
   {% if 'registrator' in image.name %}
   {{ image.name }}:
     image: {{ image.prefix }}:{{ image.tag }}
@@ -103,7 +137,7 @@ services:
       - {{ docker_swarm_overlay.name }}
     deploy:
       mode: global
-      placement:
-        constraints: [node.role ==  manager]
+    #  placement:
+    #    constraints: [node.role ==  manager]
   {% endif %}
 {% endfor %}

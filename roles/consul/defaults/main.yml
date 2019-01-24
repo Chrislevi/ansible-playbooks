@@ -24,6 +24,17 @@ images:
       - "{{ config_dir }}/config.json:/consul/config.json"
     command: "agent -ui -config-file /consul/config.json -data-dir /consul/data -serf-lan-bind=0.0.0.0 -bootstrap-expect={{ groups['swarm-managers']|length }} -retry-join consul.cluster"
 
+  - name: "consul-client"
+    prefix: "consul"
+    tag: "{{ version }}"
+    environment:
+      - CONSUL_BIND_INTERFACE=eth0
+      - CONSUL_HTTP_TOKEN={{ consul_api_token }}
+    volumes:
+      - "{{ consul_docker_vol }}:/consul/data"
+      - "{{ config_dir }}/client-config.json:/consul/config.json"
+    command: "agent -ui -config-file /consul/config.json -data-dir /consul/data -serf-lan-bind=0.0.0.0 -retry-join consul.cluster"
+
   - name: "registrator"
     prefix: "gliderlabs/registrator"
     tag: "master"

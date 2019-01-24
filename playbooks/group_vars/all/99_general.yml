@@ -24,7 +24,6 @@ python_packages:
 common_packages:
   - htop
   - vim
-  - python3-pip
   - apt-transport-https
   - ca-certificates
   - curl

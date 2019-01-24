@@ -14,6 +14,7 @@
       local: true
 
   - name: "Docker archive | Create binary directory"
+    become: true
     file:
       path: "{{ archive_dir }}"
       state: directory

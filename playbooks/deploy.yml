@@ -20,7 +20,7 @@
 - hosts: registry
   gather_facts: yes
   roles:
-    - { role: registry }
+    - { role: registry, purge: false}
 
 - hosts: swarm-cluster
   become: yes
