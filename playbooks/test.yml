@@ -1,7 +1,6 @@
 ---
-- hosts: swarm-managers
+- hosts: localhost
   gather_facts: true
   become: yes
-  tasks:
-  - debug:
-      msg: "{{ ansible_play_hosts }}"
+  roles:
+  - { role: test }

@@ -36,7 +36,7 @@
   local_action: template
     src="{{ item }}.j2"
     dest="{{ compose_dir }}/{{ item }}"
-    lstrip_blocks=true
+    #lstrip_blocks=true
   with_items:
   - docker-compose.yml
   tags:

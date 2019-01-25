@@ -10,134 +10,29 @@ volumes:
 
 services:
 {% for image in images %}
-  {% if 'consul' in image.prefix %}
   {{ image.name }}:
     image: {{ image.prefix }}:{{ image.tag }}
-    {% if image.volumes is defined %}
+{%     if image.volumes is defined %}
     volumes:
-      {% for vol in image.volumes %}
-    - {{ vol }}
-      {% endfor %}
-    {% endif %}
-    {% if image.ports is defined %}
+{{    image.volumes | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.ports is defined %}
     ports:
-      - target: 8500
-        published: 8500
-        mode: host
-      - target: 53
-        published: 53
-        mode: host
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: tcp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: tcp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: tcp
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: udp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: udp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: udp
-    {% endif %}
-    {% if image.environment is defined %}
+{{    image.ports | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.environment is defined %}
     environment:
-      {% for env in image.environment %}
-    - {{ env }}
-      {% endfor %}
-    {% endif %}
-    {% if image.command is defined %}
-    command: "{{ image.command }}"
-    {% endif %}
+{{    image.environment | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.command is defined %}
+    command: {{ image.command }}
+{%     endif %}
+{%     if image.networks is defined %}
     networks:
-      {{ docker_swarm_overlay.name }}:
-        aliases:
-          - consul.cluster
+{{    image.networks | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.deploy is defined %}
     deploy:
-      endpoint_mode: dnsrr
-      mode: global
-      placement:
-        constraints: [node.role ==  manager]
-  {% endif %}
-
-  {% if 'client' in image.name %}
-    image: {{ image.prefix }}:{{ image.tag }}
-    {% if image.volumes is defined %}
-    volumes:
-      {% for vol in image.volumes %}
-    - {{ vol }}
-      {% endfor %}
-    {% endif %}
-    {% if image.ports is defined %}
-    ports:
-      - target: 8500
-        published: 8500
-        mode: host
-    {% endif %}
-    {% if image.environment is defined %}
-    environment:
-      {% for env in image.environment %}
-    - {{ env }}
-      {% endfor %}
-    {% endif %}
-    {% if image.command is defined %}
-    command: "{{ image.command }}"
-    {% endif %}
-    networks:
-      {{ docker_swarm_overlay.name }}:
-        aliases:
-          - consul.cluster
-    deploy:
-      endpoint_mode: dnsrr
-      mode: global
-      placement:
-        constraints: [node.role !=  manager]
-  {% endif %}
-
-  {% if 'registrator' in image.name %}
-  {{ image.name }}:
-    image: {{ image.prefix }}:{{ image.tag }}
-    {% if image.volumes is defined %}
-    volumes:
-      {% for vol in image.volumes %}
-    - {{ vol }}
-      {% endfor %}
-    {% endif %}
-    {% if image.ports is defined %}
-    ports:
-      {% for port in image.ports %}
-    - {{ port }}
-      {% endfor %}
-    {% endif %}
-    {% if image.environment is defined %}
-    environment:
-      {% for env in image.environment %}
-    - {{ env }}
-      {% endfor %}
-    {% endif %}
-    {% if image.command is defined %}
-    command:
-      {% for cmd in image.command %}
-    - {{ cmd }}
-      {% endfor %}
-    {% endif %}
-    networks:
-      - {{ docker_swarm_overlay.name }}
-    deploy:
-      mode: global
-    #  placement:
-    #    constraints: [node.role ==  manager]
-  {% endif %}
+{{    image.deploy | to_nice_yaml | indent(6, true) }}
+{%     endif %}
 {% endfor %}

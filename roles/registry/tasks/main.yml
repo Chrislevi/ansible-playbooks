@@ -40,6 +40,7 @@
   when: purge
 
 - name: "Start containers"
+  become: true
   docker_service:
     project_src: "{{ compose_dir }}"
     remove_orphans: true

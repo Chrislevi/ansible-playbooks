@@ -4,42 +4,35 @@ networks:
   {{ docker_swarm_overlay.name }}:
     external: true
 
+volumes:
+  {{ jenkins_data_vol }}:
+
 services:
 {% for image in images %}
-  {% if 'jenkins' in image.prefix %}
   {{ image.name }}:
     image: {{ image.prefix }}:{{ image.tag }}
-    {% if image.dns is defined %}
-    dns: "{{ image.dns }}"
-    {% endif %}
-    {% if image.volumes is defined %}
+{%     if image.volumes is defined %}
     volumes:
-      {% for vol in image.volumes %}
-    - {{ vol }}
-      {% endfor %}
-    {% endif %}
-    {% if image.ports is defined %}
+{{    image.volumes | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.ports is defined %}
     ports:
-      {% for port in image.ports %}
-    - {{ port }}
-      {% endfor %}
-    {% endif %}
-    {% if image.environment is defined %}
+{{    image.ports | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.environment is defined %}
     environment:
-      {% for env in image.environment %}
-    - {{ env }}
-      {% endfor %}
-    {% endif %}
-    {% if image.command is defined %}
-    command: "{{ image.command }}"
-    {% endif %}
+{{    image.environment | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.command is defined %}
+    command:
+{{    image.command | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.networks is defined %}
     networks:
-      - {{ docker_swarm_overlay.name }} #}
+{{    image.networks | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.deploy is defined %}
     deploy:
-      endpoint_mode: vip
-      replicas: 1 # FIXME cant get int "{{ replica }}"
-      mode: replicated
-      placement:
-        constraints: [node.role ==  worker]
-  {% endif %}
+{{    image.deploy | to_nice_yaml | indent(6, true) }}
+{%     endif %}
 {% endfor %}

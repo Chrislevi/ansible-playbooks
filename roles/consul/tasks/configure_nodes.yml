@@ -11,4 +11,5 @@
     src: "{{ item }}.j2"
     dest: "{{ config_dir }}/{{ item }}"
   with_items:
-   - config.json
+   - server-config.json
+   - client-config.json

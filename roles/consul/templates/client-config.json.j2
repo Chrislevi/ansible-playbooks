@@ -1,8 +1,10 @@
 {
+  "skip_leave_on_interrupt": true,
   "data_dir": "/consul/data",
   "datacenter": "{{ consul_datacenter }}",
   "node_name": "{{ inventory_hostname }}",
   "client_addr": "0.0.0.0",
+  "serf_lan": "0.0.0.0",
   "disable_update_check": true,
   "log_level": "INFO"
 }

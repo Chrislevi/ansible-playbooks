@@ -1,7 +1,6 @@
 #--------------------- Consul ------------------#
 config_dir: "{{ consul_config_dir | default(compose_dir) }}"
 data_dir: "{{ consul_data_dir | default('/consul/data') }}"
-replica: "{{ consul_replica | default('global') }}"
 version: "{{ consul_version | default('1.2.4') }}"
 stack_name: "{{ consul_stack_name | default('consul') }}"
 
@@ -14,26 +13,74 @@ images:
   - name: "consul"
     prefix: "consul"
     tag: "{{ version }}"
-    ports: 8500:8500
+    ports:
+      - target: 8500
+        published: 8500
+        mode: host
+      - target: 53
+        published: 53
+        mode: host
+      - target: 8300
+        published: 8300
+        mode: host
+        protocol: tcp
+      - target: 8301
+        published: 8301
+        mode: host
+        protocol: tcp
+      - target: 8302
+        published: 8302
+        mode: host
+        protocol: tcp
+      - target: 8300
+        published: 8300
+        mode: host
+        protocol: udp
+      - target: 8301
+        published: 8301
+        mode: host
+        protocol: udp
+      - target: 8302
+        published: 8302
+        mode: host
+        protocol: udp
     environment:
       - CONSUL_ALLOW_PRIVILEGED_PORTS="53"
       - CONSUL_BIND_INTERFACE=eth0
-      - CONSUL_HTTP_TOKEN={{ consul_api_token }}
+      - CONSUL_HTTP_TOKEN="{{ consul_api_token }}"
     volumes:
       - "{{ consul_docker_vol }}:/consul/data"
-      - "{{ config_dir }}/config.json:/consul/config.json"
-    command: "agent -ui -config-file /consul/config.json -data-dir /consul/data -serf-lan-bind=0.0.0.0 -bootstrap-expect={{ groups['swarm-managers']|length }} -retry-join consul.cluster"
+      - "{{ config_dir }}/server-config.json:/consul/server-config.json"
+    command: agent -ui -config-file /consul/server-config.json -bootstrap-expect={{ groups['swarm-managers']|length }} -retry-join consul.cluster
+    networks:
+      swarm_network:
+        aliases:
+          - consul.cluster
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints: [node.role ==  manager]
 
   - name: "consul-client"
     prefix: "consul"
     tag: "{{ version }}"
     environment:
       - CONSUL_BIND_INTERFACE=eth0
-      - CONSUL_HTTP_TOKEN={{ consul_api_token }}
+      - CONSUL_HTTP_TOKEN="{{ consul_api_token }}"
     volumes:
       - "{{ consul_docker_vol }}:/consul/data"
-      - "{{ config_dir }}/client-config.json:/consul/config.json"
-    command: "agent -ui -config-file /consul/config.json -data-dir /consul/data -serf-lan-bind=0.0.0.0 -retry-join consul.cluster"
+      - "{{ config_dir }}/client-config.json:/consul/client-config.json"
+    command: agent -config-file /consul/client-config.json -retry-join consul.cluster
+    networks:
+      swarm_network:
+        aliases:
+          - consul.cluster
+    deploy:
+      endpoint_mode: dnsrr
+      mode: global
+      placement:
+        constraints: [node.role !=  manager]
 
   - name: "registrator"
     prefix: "gliderlabs/registrator"
@@ -42,5 +89,41 @@ images:
       - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
     volumes:
       - /var/run/docker.sock:/tmp/docker.sock
-    command:
-      - "-internal consul://consul.cluster:8500"
+    command: '-internal consul://consul.cluster:8500'
+    networks:
+      - "{{ docker_swarm_overlay.name }}"
+    deploy:
+      mode: global
+
+  - name: proxy
+    prefix: "dockerflow/docker-flow-proxy"
+    tag: "18.11.07-15"
+    ports:
+      - target: 8080
+        published: 8080
+    environment:
+      - "MODE=swarm"
+      - "CONSUL_ADDRESS={% for host in groups['swarm-managers'] %}{{ host }}:8500{% if not loop.last %},{% endif %}{% endfor %}" # TODO FIXME change consul port hardcoded
+    network:
+      - "{{ docker_swarm_overlay.name }}"
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role ==  manager]
+
+  - name: swarm-listener
+    prefix: "dockerflow/docker-flow-swarm-listener"
+    tag: "19.01.12-20"
+    volumes:
+      - type: bind
+        source: /var/run/docker.sock
+        target: /var/run/docker.sock
+    environment:
+      - DF_NOTIFY_CREATE_SERVICE_URL=http://proxy:8080/v1/docker-flow-proxy/reconfigure
+      - DF_NOTIFY_REMOVE_SERVICE_URL=http://proxy:8080/v1/docker-flow-proxy/remove
+    network:
+      - "{{ docker_swarm_overlay.name }}"
+    deploy:
+      mode: global
+      placement:
+        constraints: [node.role ==  manager]

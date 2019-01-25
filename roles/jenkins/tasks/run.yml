@@ -8,6 +8,15 @@
     prune: yes
   when: purge
 
+- name: "Purge | remove {{ stack_name }} volumes"
+  docker_volume:
+    name: "{{ item }}"
+    state: absent
+    force: yes
+  when: purge
+  with_items:
+    - "{{ jenkins_data_vol }}"
+
 - name: "Configure | Create compose dir -> {{ compose_dir }}"
   file:
     path: "{{ compose_dir }}"
