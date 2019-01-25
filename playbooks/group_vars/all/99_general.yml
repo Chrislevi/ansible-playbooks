@@ -3,7 +3,7 @@
 become: True
 
 domain_name: "default.local"
-
+dns_server: "8.8.8.8"
 vagrant_dir: "{{ work_dir }}/.vagrant"
 work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
 reqs_dir: "{{ work_dir }}/reqs"
@@ -16,11 +16,14 @@ internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 
 
 python_packages:
   - jsondiff
+  - docker
+  - docker-compose
+  - dnspython
+  - pip
 
 common_packages:
   - htop
   - vim
-  - python3-pip
   - apt-transport-https
   - ca-certificates
   - curl
@@ -34,6 +37,10 @@ common_packages:
   - ntp
   - python-pip
   - python3-pip
+
+registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
+swarm_master: "{{ groups['swarm-managers'][0] }}"
+#registry_host: "{{ lookup('dig', ansible_host) }}"
 
 s3_storage:
   enabled: false

@@ -3,7 +3,7 @@
   tasks:
   - setup:
 
-- hosts: swarm-cluster
+- hosts: all
   gather_facts: yes
   become: yes
   roles:

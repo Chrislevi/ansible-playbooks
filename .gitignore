@@ -1,3 +1,5 @@
 .vagrant
 reqs
 .ansible_venv
+./playbooks/test.yml
+playbooks/test.yml

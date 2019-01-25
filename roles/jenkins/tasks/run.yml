@@ -1,4 +1,5 @@
 ---
+
 - name: "Purge | remove {{ stack_name }} stack"
   docker_stack:
     state: absent
@@ -7,14 +8,14 @@
     prune: yes
   when: purge
 
-- name: "Purge | remove docker volumes"
+- name: "Purge | remove {{ stack_name }} volumes"
   docker_volume:
     name: "{{ item }}"
     state: absent
     force: yes
   when: purge
   with_items:
-    - "{{ consul_docker_vol }}"
+    - "{{ jenkins_data_vol }}"
 
 - name: "Configure | Create compose dir -> {{ compose_dir }}"
   file:
@@ -32,11 +33,19 @@
   tags:
   - compose
 
+- name: "Stop containers"
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    state: absent
+  register: compose
+  ignore_errors: true
+  when: purge
+
 - name: "Configure | Deploy compose files locally"
   local_action: template
     src="{{ item }}.j2"
     dest="{{ compose_dir }}/{{ item }}"
-    #lstrip_blocks=true
+    lstrip_blocks=true
   with_items:
   - docker-compose.yml
   tags:
@@ -47,3 +56,10 @@
     state: present
     name: "{{ stack_name }}"
     compose_file: "{{ compose_dir }}/docker-compose.yml"
+
+# - name: "Start containers"
+#   docker_service:
+#     project_src: "{{ compose_dir }}"
+#     remove_orphans: true
+#     state: present
+#     restarted: true

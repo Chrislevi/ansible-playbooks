@@ -1,0 +1,12 @@
+# Uncomment to inject values to default
+
+
+# jenkins_config_dir: "{{ compose_dir }}"
+# jenkins_data_dir: "/var/lib/jenkins"
+# jenkins_version: 2.138.3
+# jenkins_stack_name: "jenkins"
+
+# consul_config_dir: "{{ compose_dir }}"
+# consul_data_dir: '/consul/data'
+# consul_version: 1.2.4
+# consul_stack_name: "consul"

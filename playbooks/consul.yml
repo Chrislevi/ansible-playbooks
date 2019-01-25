@@ -1,5 +1,5 @@
 ---
-- hosts: deploy:swarm-managers
+- hosts: consul-nodes
   become: true
   gather_facts: yes
   roles:

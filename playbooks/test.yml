@@ -1,9 +1,6 @@
 ---
-- hosts: swarm-workers
+- hosts: localhost
   gather_facts: true
   become: yes
-  tasks:
-  - debug:
-      msg: "{{ item.key }} {{ item.value }}"
-    with_dict:
-    - "{{ docker_kernel_options }}"
+  roles:
+  - { role: test }

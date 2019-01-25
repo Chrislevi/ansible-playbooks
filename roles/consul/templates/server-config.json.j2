@@ -1,11 +1,17 @@
 {
+  "skip_leave_on_interrupt": true,
   "data_dir": "/consul/data",
   "datacenter": "{{ consul_datacenter }}",
   "node_name": "{{ inventory_hostname }}",
+  "client_addr": "0.0.0.0",
+  "serf_lan": "0.0.0.0",
   "server" : true,
   "ui" : true,
   "disable_update_check": true,
   "log_level": "INFO",
+  "ports": {
+    "dns": 53
+  },
   "dns_config": {
     "service_ttl": {
       "service": "10s"

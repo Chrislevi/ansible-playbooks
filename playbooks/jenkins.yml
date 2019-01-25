@@ -1,0 +1,5 @@
+- hosts: jenkins-master
+  become:
+  gather_facts: yes
+  roles:
+    - { role: jenkins, purge: false }

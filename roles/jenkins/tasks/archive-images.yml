@@ -1,0 +1,3 @@
+---
+- import_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
+  delegate_to: local

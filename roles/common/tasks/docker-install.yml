@@ -10,7 +10,9 @@
         repo: 'deb [arch=amd64] {{ docker_repo }} {{ ansible_distribution_release }} stable'
         state: present
 
-  when: internet_available | bool
+  when:
+  - internet_available | bool
+  - "'apt' in ansible_pkg_mgr"
 
 # - meta: end_play
 - name: "Install | Uninstall previous old Docker bins"
@@ -28,6 +30,7 @@
     state: latest
   with_items:
   - "{{ docker_packages }}"
+  when: "'apt' in ansible_pkg_mgr"
   register: result
   until: result is succeeded
   retries: 5
@@ -36,8 +39,9 @@
 - name: "Install | Pip requiremnets"
   pip:
     name: "{{ item }}"
+    state: latest
   with_items:
-  - docker
+  - "{{ python_packages }}"
 
 - name: "Install | Add users to the Docker group"
   user:
