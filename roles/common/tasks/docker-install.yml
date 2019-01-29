@@ -36,12 +36,19 @@
   retries: 5
   delay: 10
 
+- name: "Install | Fetch pip packages"
+  copy:
+    src: "{{ pypi_dir }}"
+    dest: "/tmp/"
+  when: "'always' in fetch"
+
 - name: "Install | Pip requiremnets"
   pip:
     name: "{{ item }}"
+    extra_args: "--no-index --find-links file:////tmp/pack"
     state: latest
   with_items:
-  - "{{ python_packages }}"
+    - "{{ python_packages }}"
 
 - name: "Install | Add users to the Docker group"
   user:

@@ -1,33 +1,39 @@
 version: "{{ compose_api_version }}"
 services:
 
+services:
 {% for image in images %}
   {{ image.name }}:
     image: {{ image.prefix }}:{{ image.tag }}
-    restart: {{ image.restart }}
-  {% if image.ports is defined %}
-    ports:
-    {% for port in image.ports %}
-    - {{ port }}
-    {% endfor %}
-  {% endif %}
-  {%- if image.environment is defined %}
-    environment:
-    {% for env in image.environment %}
-    - {{ env }}
-    {% endfor %}
-  {% endif %}
-  {% if image.volumes is defined %}
+{%     if image.volumes is defined %}
     volumes:
-    {% for vol in image.volumes %}
-    - {{ vol }}
-    {% endfor %}
-  {% endif %}
-  {% if image.depends_on is defined %}
+{{    image.volumes | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.ports is defined %}
+    ports:
+{{    image.ports | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.environment is defined %}
+    environment:
+{{    image.environment | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.command is defined %}
+    command:
+{{    image.command | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.networks is defined %}
+    networks:
+{{    image.networks | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.deploy is defined %}
+    deploy:
+{{    image.deploy | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+{%     if image.depends_on is defined %}
     depends_on:
-    {% for dep in image.depends_on %}
-    - {{ dep }}
-    {% endfor %}
-  {% endif %}
-
+{{    image.depends_on | to_nice_yaml | indent(6, true) }}
+{%     endif %}
 {% endfor %}
+
+# DEBUG
+# curl -fs http://localhost:5005/v2/_catalog | python -m json.tool

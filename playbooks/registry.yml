@@ -1,5 +1,10 @@
 ---
-- hosts: local
+- hosts: all
   become: true
   roles:
-  - { role: registry }
+      - { role: common }
+
+- hosts: registry
+  become: true
+  roles:
+      - { role: registry, purge: false }

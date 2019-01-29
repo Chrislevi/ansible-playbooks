@@ -4,12 +4,28 @@
     state: directory
   with_items:
     - "{{ config_dir }}"
+    - "{{ compose_dir }}"
+    - "{{ consul_server_config }}"
+    - "{{ consul_agent_config }}"
 
 - name: "Configure | Deploy {{ stack_name }} config"
   template:
     lstrip_blocks: true
     src: "{{ item }}.j2"
-    dest: "{{ config_dir }}/{{ item }}"
+    dest: "{{ config_dir }}/{{ item.split('-')[0] }}/{{ item }}"
   with_items:
    - server-config.json
-   - client-config.json
+   - agent-config.json
+
+- name: "Configure | Deploy swarm service"
+
+
+- name: "Configure | Deploy compose files"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ compose_dir }}/{{ item }}"
+    lstrip_blocks: true
+  with_items:
+  - docker-compose.yml
+  tags:
+  - compose

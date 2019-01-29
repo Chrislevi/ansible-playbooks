@@ -1,25 +1,33 @@
 # ------------------------------------------ General -------------------------------------------- #
 
 become: True
+fetch: always # [always | false]
 
 domain_name: "default.local"
 dns_server: "8.8.8.8"
 vagrant_dir: "{{ work_dir }}/.vagrant"
 work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
+playbooks_dir: "{{ work_dir }}/playbooks"
 reqs_dir: "{{ work_dir }}/reqs"
-data_dir: "/DATA"
-compose_dir: "{{ data_dir }}/compose/{{ role_path | basename }}"
+images_dir: "{{ reqs_dir }}/images"
+pypi_dir: "{{ reqs_dir }}/pack"
+project_data_dir: "/DATA"
+compose_dir: "{{ project_data_dir }}/compose/{{ role_path | basename }}"
+
 compose_api_version: "3.4"
 
 # Internet connectivity check
 internet_available: "{{ lookup('pipe', 'nslookup google.com > /dev/null || exit 0  && echo True') }}"
 
+#python_packages: "{{ lookup('file', '{{ work_dir }}/requirements.txt') }}"
 python_packages:
-  - jsondiff
-  - docker
-  - docker-compose
-  - dnspython
-  - pip
+  - docker==3.7.0
+  - docker-compose==1.23.2
+  #- ansible==2.7.6
+  #- pyOpenSSL==18.0.0
+  - jsondiff==1.1.2
+  - dnspython==1.16.0
+  #- MarkupSafe==1.0
 
 common_packages:
   - htop
@@ -38,8 +46,18 @@ common_packages:
   - python-pip
   - python3-pip
 
-registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
-swarm_master: "{{ groups['swarm-managers'][0] }}"
+# Registry
+registry_gui_port: 9090
+registry_port: 5005
+registry_host: "registry"
+registry_role: false
+#registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
+registry_hostname: "{{ registry_host }}:{{ registry_port }}"
+
+jenkins_port: "8080"
+consul_proxy_port: 8888
+consul_bind_interface: eth1
+
 #registry_host: "{{ lookup('dig', ansible_host) }}"
 
 s3_storage:

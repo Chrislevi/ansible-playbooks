@@ -3,6 +3,14 @@
   tasks:
   - setup:
 
+- hosts: deploy
+  gather_facts: yes
+  become: yes
+  tasks:
+  - include_role:
+      name: archive_binary
+    when: internet_available | bool
+
 - hosts: all
   gather_facts: yes
   become: yes

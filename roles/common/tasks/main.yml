@@ -3,6 +3,7 @@
   package:
     name: "{{ item }}"
     state: present
+    update_cache: true
   loop:
     - "{{ common_packages }}"
   when: "'apt' in ansible_pkg_mgr"
@@ -13,22 +14,21 @@
   when: "'apt' in ansible_pkg_mgr"
 
 - debug:
-    msg: "{{ registry_host }}"
+    msg: "{{ registry_hostname }}"
 
 - name: "Check if registry on deployer"
   set_fact:
     registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
   when:
-  - "'localhost' in registry_host"
+  - "'localhost' in hostvars[groups['registry'][0]]['ansible_host']"
 
 - name: "Check if registry on remote"
   set_fact:
     registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_host'] }}"
   when:
-  - "'localhost' not in registry_host"
-  - hostvars[groups['registry'][0]]['ansible_host'] is defined
+  - "'localhost' not in hostvars[groups['registry'][0]]['ansible_host']"
 
 - name: "Configure Registry DNS"
   lineinfile:
     path: /etc/hosts
-    line: "{{ registry_ip }}  {{ registry_hostname }}"
+    line: "{{ registry_ip }}  {{ registry_host }}"

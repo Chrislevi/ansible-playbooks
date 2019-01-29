@@ -10,7 +10,7 @@ volumes:
 services:
 {% for image in images %}
   {{ image.name }}:
-    image: {{ image.prefix }}:{{ image.tag }}
+    image: {{ registry_hostname }}/{{ image.prefix }}:{{ image.tag }}
 {%     if image.volumes is defined %}
     volumes:
 {{    image.volumes | to_nice_yaml | indent(6, true) }}

@@ -2,5 +2,19 @@
 - hosts: localhost
   gather_facts: true
   become: yes
-  roles:
-  - { role: test }
+  tasks:
+  - debug:
+      msg: "{{ python_packages | join(' ') }}"
+
+  - name: "Archive pip packages"
+    shell: 'pip2pi {{ pypi_dir }} {{ item }}'
+    with_items:
+      - "{{ python_packages }}"
+
+  - name: "Install | Pip requiremnets"
+    pip:
+      name: "{{ item }}"
+      extra_args: "--no-index --find-links file:///{{ pypi_dir }}"
+      state: latest
+    with_items:
+      - "{{ python_packages }}"

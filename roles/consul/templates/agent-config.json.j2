@@ -5,6 +5,7 @@
   "node_name": "{{ inventory_hostname }}",
   "client_addr": "0.0.0.0",
   "serf_lan": "0.0.0.0",
+  "advertise_addr": "{{ hostvars[inventory_hostname]['ansible_host'] }}",
   "disable_update_check": true,
   "log_level": "INFO"
 }

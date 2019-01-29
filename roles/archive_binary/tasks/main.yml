@@ -16,3 +16,17 @@
   when:
   - internet_available | bool
   - binaries is defined
+
+- block:
+
+  - name: "Install pip2pi"
+    pip:
+      name: "pip2pi"
+      state: latest
+
+  - name: "Archive pip packages"
+    shell: 'pip2pi {{ pypi_dir }} {{ item }}'
+    with_items:
+      - "{{ python_packages }}"
+
+  when: internet_available | bool

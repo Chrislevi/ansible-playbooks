@@ -1,0 +1,24 @@
+---
+- name: "Purge | remove registry volumes"
+  # docker_volume:
+  file:
+    dest: "{{ data_dir }}"
+    state: absent
+  when: purge
+
+- name: "Stop containers"
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    state: absent
+  ignore_errors: true
+  register: compose
+  when: purge
+
+- name: "Start containers"
+  become: true
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    remove_orphans: true
+    state: present
+    restarted: true
+  register: compose

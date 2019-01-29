@@ -1,5 +1,11 @@
 # Uncomment to inject values to default
 
+services:
+  swarm:
+    apply_to: "swarm-cluster"
+    ports:
+      - 2375
+      - 2377
 
 # jenkins_config_dir: "{{ compose_dir }}"
 # jenkins_data_dir: "/var/lib/jenkins"

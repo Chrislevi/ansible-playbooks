@@ -4,6 +4,9 @@ data_dir: "{{ consul_data_dir | default('/consul/data') }}"
 version: "{{ consul_version | default('1.2.4') }}"
 stack_name: "{{ consul_stack_name | default('consul') }}"
 
+consul_server_config: "{{ config_dir }}/server"
+consul_agent_config: "{{ config_dir }}/agent"
+
 consul_datacenter: "default"
 consul_api_token: "SECR3T"
 consul_log_level: "INFO"
@@ -13,45 +16,59 @@ images:
   - name: "consul"
     prefix: "consul"
     tag: "{{ version }}"
+    #network_mode: "host"
     ports:
       - target: 8500
         published: 8500
         mode: host
-      - target: 53
+      # - target: 53
+      #   published: 53
+      #   mode: host
+      #   protocol: udp
+      # - target: 53
+      #   published: 53
+        # mode: host
+        # protocol: tcp
+      - target: 8300
+        published: 8300
+        mode: host
+        protocol: tcp
+      - target: 8301
+        published: 8301
+        mode: host
+        protocol: tcp
+      - target: 8302
+        published: 8302
+        mode: host
+        protocol: tcp
+      - target: 8300
+        published: 8300
+        mode: host
+        protocol: udp
+      - target: 8301
+        published: 8301
+        mode: host
+        protocol: udp
+      - target: 8302
+        published: 8302
+        mode: host
+        protocol: udp
+      - target: 8600
         published: 53
         mode: host
-      - target: 8300
-        published: 8300
+        protocol: udp
+      - target: 8600
+        published: 53
         mode: host
         protocol: tcp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: tcp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: tcp
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: udp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: udp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: udp
     environment:
-      - CONSUL_ALLOW_PRIVILEGED_PORTS="53"
-      - CONSUL_BIND_INTERFACE=eth0
-      - CONSUL_HTTP_TOKEN="{{ consul_api_token }}"
+      - "CONSUL_ALLOW_PRIVILEGED_PORTS=53"
+      - "CONSUL_BIND_INTERFACE={{ consul_bind_interface }}"
+      - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
     volumes:
       - "{{ consul_docker_vol }}:/consul/data"
-      - "{{ config_dir }}/server-config.json:/consul/server-config.json"
-    command: agent -ui -config-file /consul/server-config.json -bootstrap-expect={{ groups['swarm-managers']|length }} -retry-join consul.cluster
+      - "{{ consul_server_config }}:/etc/consul"
+    command: agent -ui -config-dir /etc/consul -bootstrap-expect={{ groups['swarm-managers']|length }} -retry-join consul.cluster
     networks:
       swarm_network:
         aliases:
@@ -65,13 +82,47 @@ images:
   - name: "consul-client"
     prefix: "consul"
     tag: "{{ version }}"
+    ports:
+      - target: 8300
+        published: 8300
+        mode: host
+        protocol: tcp
+      - target: 8301
+        published: 8301
+        mode: host
+        protocol: tcp
+      - target: 8302
+        published: 8302
+        mode: host
+        protocol: tcp
+      - target: 8300
+        published: 8300
+        mode: host
+        protocol: udp
+      - target: 8301
+        published: 8301
+        mode: host
+        protocol: udp
+      - target: 8302
+        published: 8302
+        mode: host
+        protocol: udp
+      - target: 8600
+        published: 8600
+        mode: host
+        protocol: udp
+      - target: 8600
+        published: 8600
+        mode: host
+        protocol: tcp
+    #network_mode: "host"
     environment:
-      - CONSUL_BIND_INTERFACE=eth0
-      - CONSUL_HTTP_TOKEN="{{ consul_api_token }}"
+      - "CONSUL_BIND_INTERFACE={{ consul_bind_interface }}"
+      - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
     volumes:
       - "{{ consul_docker_vol }}:/consul/data"
-      - "{{ config_dir }}/client-config.json:/consul/client-config.json"
-    command: agent -config-file /consul/client-config.json -retry-join consul.cluster
+      - "{{ consul_agent_config }}:/etc/consul"
+    command: agent -config-dir /etc/consul -retry-join consul.cluster
     networks:
       swarm_network:
         aliases:
@@ -100,7 +151,7 @@ images:
     tag: "18.11.07-15"
     ports:
       - target: 8080
-        published: 8080
+      #  published: {{ consul_proxy_port }}
     environment:
       - "MODE=swarm"
       - "CONSUL_ADDRESS={% for host in groups['swarm-managers'] %}{{ host }}:8500{% if not loop.last %},{% endif %}{% endfor %}" # TODO FIXME change consul port hardcoded

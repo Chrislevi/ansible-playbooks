@@ -3,6 +3,8 @@
   tasks:
   - setup:
 
+- import_playbook: pubkey.yml
+
 - hosts: deploy
   gather_facts: yes
   become: yes
