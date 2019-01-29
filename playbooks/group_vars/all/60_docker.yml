@@ -1,3 +1,4 @@
+swarm_master: "{{ groups['swarm-managers'][0] }}"
 docker_group: docker
 docker_group_members: ["user", "vagrant"]
 docker_sockets: "-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375"

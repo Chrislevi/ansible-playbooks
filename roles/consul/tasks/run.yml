@@ -8,39 +8,14 @@
   when: purge
 
 - name: "Purge | remove docker volumes"
+  delegate_to: "{{ item }}"
   docker_volume:
-    name: "{{ item }}"
+    name: "{{ consul_docker_vol }}"
     state: absent
     force: yes
   when: purge
   with_items:
-    - "{{ consul_docker_vol }}"
-
-- name: "Configure | Create compose dir -> {{ compose_dir }}"
-  file:
-    path: "{{ compose_dir }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-
-- name: "Configure | Deploy compose files"
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ compose_dir }}/{{ item }}"
-    lstrip_blocks: true
-  with_items:
-  - docker-compose.yml
-  tags:
-  - compose
-
-- name: "Configure | Deploy compose files locally"
-  local_action: template
-    src="{{ item }}.j2"
-    dest="{{ compose_dir }}/{{ item }}"
-    #lstrip_blocks=true
-  with_items:
-  - docker-compose.yml
-  tags:
-  - compose
+    - "{{ groups['consul-nodes'] }}"
 
 - name: "Run | Deploy {{ stack_name }} stack"
   docker_stack:

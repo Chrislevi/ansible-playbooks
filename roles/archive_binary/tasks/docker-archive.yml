@@ -6,49 +6,92 @@
       ports: "{{ image.ports if image.ports is defined else '' }}"
       id: "{{ image.prefix }}:{{ image.tag }}"
       binary: "{{ image.name }}-{{ image.tag }}.image.tar"
+    # TODO FIXME output untrimmed
+    # registry_hostname: |
+    #   {%- if '80' not in registry_port | string -%}
+    #   {%-   set host_name = registry_host ~':'~ registry_port -%}
+    #   {%- else -%}
+    #   {%-   set host_name = registry_host -%}
+    #   {%- endif -%}
+    #   {{- (host_name) -}}
 
-- block:
-  - name: "Docker archive | Set DOCKER_IMAGE directory -> {{ reqs_dir }}"
-    set_fact:
-      archive_dir: "{{ reqs_dir }}"
-      local: true
+- name: "Docker archive | Set DOCKER_IMAGE directory -> {{ archive_dir }}"
+  set_fact:
+    archive_dir: "{{ images_dir }}"
+    local: true
 
-  - name: "Docker archive | Create binary directory"
-    become: true
-    file:
-      path: "{{ archive_dir }}"
-      state: directory
-
-- name: "Docker archive | Set DOCKER_IMAGE directory -> /tmp"
+- name: "Docker archive | Set DOCKER_IMAGE directory -> {{ archive_dir }}"
   set_fact:
     archive_dir: "/tmp"
     local: false
-  when: "not 'local' in ansible_connection"
+  when:
+  - registry_role | bool
+  - "'local' not in groups['registry'][0]"
+
+- name: "Docker archive | Create binary directory"
+  become: true
+  file:
+    path: "{{ archive_dir }}"
+    state: directory
 
 - name: "Check {{ docker_image.binary }} exists"
   stat:
-    path: "{{ archive_dir }}/{{ docker_image.binary }}"
+    path: "{{ images_dir }}/{{ docker_image.binary }}"
   register: binary
 
 - name: "Fetch {{ docker_image.binary }}"
-  synchronize:
-    src: "{{ reqs_dir }}/{{ docker_image.binary }}"
+  delegate_to: "{{ groups['registry'][0] }}"
+  copy:
+  #synchronize:
+    src: "{{ images_dir }}/{{ docker_image.binary }}"
     dest: "{{ archive_dir }}/{{ docker_image.binary }}"
-    mode: push
+    # mode: push
   when:
-  - not local
+  - not local | bool
+  - registry_role | bool
   - binary.stat.exists
   register: fetch
 
 - name: "Load Check {{ docker_image.binary }} to docker images"
+  delegate_to: "{{ groups['registry'][0] }}"
   docker_image:
     name: "{{ docker_image.id }}"
     load_path: "{{ archive_dir }}/{{ docker_image.binary }}"
-  when: (binary.stat.exists | bool) or (fetch.changed | bool)
+  when:
+  - binary.stat.exists | bool
 
 - name: "Archive {{ docker_image.binary }}"
+  become: true
   docker_image:
     name: "{{ docker_image.id }}"
-    archive_path: "{{ reqs_dir }}/{{ docker_image.binary }}"
+    archive_path: "{{ archive_dir }}/{{ docker_image.binary }}"
     pull: true
-  when: local and (not binary.stat.exists | bool)
+  when:
+    - not binary.stat.exists | bool
+    - internet_available | bool
+
+# TODO BUILD TASK
+
+- name: "Tag images {{ registry_hostname }}"
+  docker_image:
+    name: "{{ docker_image.id }}"
+    repository: "{{ registry_hostname }}/{{ docker_image.id }}"
+    pull: no
+
+- name: "Push images {{ registry_hostname }}/{{ docker_image.id }}"
+  shell: "docker push {{ registry_hostname }}/{{ docker_image.id }}"
+  when:
+    - registry_role is defined and not registry_role | bool
+
+# TODO FIXME MODULE BUG https://github.com/ansible/ansible/issues/44077
+# - name: "Push images {{ registry_hostname }}/{{ docker_image.id }}"
+#   docker_image:
+#     name: "{{ docker_image.id }}"
+#     # tag: "{{ image.tag }}"
+#     repository: "{{ registry_hostname }}/{{ docker_image.id }}"
+#     pull: no
+#     push: yes
+#     # Ansible doesnt check if image in registry therefore push always
+#     force: yes
+#   when:
+#     - registry_role is defined and not registry_role | bool

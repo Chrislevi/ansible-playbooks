@@ -7,6 +7,7 @@
     owner: "{{ ansible_user }}"
   with_items:
     - "{{ config_dir }}"
+    - "{{ compose_dir }}"
 
 - name: "Configure | Deploy config"
   template:
@@ -22,3 +23,13 @@
     dest: "{{ config_dir }}/{{ item }}"
   with_items:
   - plugins.txt
+
+- name: "Configure | Deploy compose files"
+  template:
+    src: "{{ item }}.j2"
+    dest: "{{ compose_dir }}/{{ item }}"
+    #lstrip_blocks: true
+  with_items:
+  - docker-compose.yml
+  tags:
+  - compose

@@ -1,12 +1,8 @@
 ---
-- hosts: all:!local
-  become: true
-  vars:
-    ansible_ssh_user: vagrant
-    ansible_ssh_pass: vagrant
+- hosts: all:!deploy
   tasks:
       - name: "Deploy public key"
         authorized_key:
             state: present
-            user: root
-            key: "{{ lookup('file', '/Users/chrislevi/.ssh/id_rsa.pub') }}"
+            user: "{{ ansible_ssh_user }}"
+            key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

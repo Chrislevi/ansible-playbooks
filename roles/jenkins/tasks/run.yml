@@ -1,4 +1,10 @@
 ---
+- name: "Purge | Deploy {{ stack_name }} stack"
+  docker_stack:
+    state: absent
+    name: "{{ stack_name }}"
+    compose_file: "{{ compose_dir }}/docker-compose.yml"
+  when: purge
 
 - name: "Purge | remove {{ stack_name }} stack"
   docker_stack:
@@ -17,41 +23,8 @@
   with_items:
     - "{{ jenkins_data_vol }}"
 
-- name: "Configure | Create compose dir -> {{ compose_dir }}"
-  file:
-    path: "{{ compose_dir }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-
-- name: "Configure | Deploy compose files"
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ compose_dir }}/{{ item }}"
-    lstrip_blocks: true
-  with_items:
-  - docker-compose.yml
-  tags:
-  - compose
-
-- name: "Stop containers"
-  docker_service:
-    project_src: "{{ compose_dir }}"
-    state: absent
-  register: compose
-  ignore_errors: true
-  when: purge
-
-- name: "Configure | Deploy compose files locally"
-  local_action: template
-    src="{{ item }}.j2"
-    dest="{{ compose_dir }}/{{ item }}"
-    lstrip_blocks=true
-  with_items:
-  - docker-compose.yml
-  tags:
-  - compose
-
 - name: "Run | Deploy {{ stack_name }} stack"
+  become: true
   docker_stack:
     state: present
     name: "{{ stack_name }}"

@@ -1,5 +1,7 @@
 ---
-- name: "Archive | Archive docker images to deployer"
+- name: "--> Archive"
+  vars:
+    registry_role: true # TODO FIXME role_path | basename not interable
   run_once: true
   include_tasks: "archive-images.yml"
   with_items:
@@ -7,43 +9,9 @@
   loop_control:
     loop_var: image
 
-- name: "Archive docker image"
-  include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
-  with_items:
-  - "{{ images }}"
-  loop_control:
-    loop_var: image
+- name: "--> Config"
+  include_tasks: ./configure_nodes.yml
 
-- name: "Create compose dir -> {{ compose_dir }}"
-  become: true
-  file:
-    path: "{{ compose_dir }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-
-- name: "Deploy compose files"
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ compose_dir }}/{{ item }}"
-    lstrip_blocks: true
-  with_items:
-  - docker-compose.yml
-  tags:
-  - compose
-
-- name: "Stop containers"
-  docker_service:
-    project_src: "{{ compose_dir }}"
-    state: absent
-  ignore_errors: true
-  register: compose
-  when: purge
-
-- name: "Start containers"
-  become: true
-  docker_service:
-    project_src: "{{ compose_dir }}"
-    remove_orphans: true
-    state: present
-    restarted: true
-  register: compose
+- name: "--> Run"
+  import_tasks: ./run.yml
+  run_once: true

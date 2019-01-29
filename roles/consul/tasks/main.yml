@@ -1,5 +1,5 @@
 ---
-- name: "Archive | Archive docker images to deployer"
+- name: "--> Archive"
   run_once: true
   include_tasks: "archive-images.yml"
   with_items:
@@ -7,15 +7,10 @@
   loop_control:
     loop_var: image
 
-- name: "Archive | Fetch docker images"
-  include_tasks: "{{ role_path }}/../archive_binary/tasks/docker-archive.yml"
-  with_items:
-  - "{{ images }}"
-  loop_control:
-    loop_var: image
+- name: "--> Config"
+  include_tasks: ./configure_nodes.yml
 
-- include_tasks: ./configure_nodes.yml
-
-- delegate_to: "{{ swarm_master }}"
-  import_tasks: ./run.yml
+- name: "--> Run"
   run_once: true
+  delegate_to: "{{ swarm_master }}"
+  import_tasks: ./run.yml
