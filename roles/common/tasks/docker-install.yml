@@ -40,7 +40,7 @@
   copy:
     src: "{{ pypi_dir }}"
     dest: "/tmp/"
-  when: "'always' in fetch"
+  when: fetch_pip
 
 - name: "Install | Pip requiremnets"
   pip:

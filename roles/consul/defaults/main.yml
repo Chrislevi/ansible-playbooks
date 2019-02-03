@@ -4,13 +4,27 @@ data_dir: "{{ consul_data_dir | default('/consul/data') }}"
 version: "{{ consul_version | default('1.2.4') }}"
 stack_name: "{{ consul_stack_name | default('consul') }}"
 
-consul_server_config: "{{ config_dir }}/server"
-consul_agent_config: "{{ config_dir }}/agent"
-
 consul_datacenter: "default"
 consul_api_token: "SECR3T"
 consul_log_level: "INFO"
 consul_docker_vol: "{{ stack_name }}"
+
+consul_server_config: "{{ config_dir }}/server"
+consul_agent_config: "{{ config_dir }}/agent"
+
+directories:
+  - "{{ compose_dir }}"
+  - "{{ config_dir }}"
+  - "{{ data_dir }}"
+  - "{{ consul_server_config }}"
+  - "{{ consul_agent_config }}"
+
+templates:
+  - { file: "server-config.json", dest: "{{ consul_server_config }}" }
+  - { file: "agent-config.json", dest: "{{ consul_agent_config }}" }
+
+volumes:
+  - "{{ consul_docker_vol }}"
 
 images:
   - name: "consul"

@@ -1,0 +1,69 @@
+---
+# - name: "Purge | Remove deployer local volumes"
+#   # delegate_to: "{{ item.0 }}"
+#   file:
+#     dest: "{{ item.1 }}"
+#     state: absent
+#     force: yes
+#   when:
+#     - purge
+#     - local_volumes is defined
+#   ignore_errors: true
+#   # with_nested:
+#   #   - "{{ groups['deploy'] }}"
+#   #   - "{{ local_volumes }}"
+
+- name: "Purge | Remove {{ role_path | basename }} local volumes"
+  become: true
+  file:
+    dest: "{{ item }}"
+    state: absent
+    force: yes
+  when:
+    - purge
+    - local_volumes is defined
+  ignore_errors: true
+  with_items:
+    - "{{ local_volumes }}"
+
+- name: "Configure | Create dirs"
+  become: true
+  file:
+    dest: "{{ item }}"
+    state: directory
+    owner: "{{ ansible_user }}"
+  with_items:
+    - "{{ directories }}"
+  tags:
+    - configure
+
+- name: "Configure | Deploy config files"
+  template:
+    lstrip_blocks: true
+    src: "{{ item.file }}.j2"
+    dest: "{{ item.dest }}/{{ item.file }}"
+  with_items:
+    - "{{ templates }}"
+  when:
+    - templates is defined
+  tags:
+    - configure
+
+- name: "Configure | Deploy dockerfiles"
+  template:
+    src: "{{ item.0 }}.j2"
+    dest: "{{ compose_dir }}/{{ item.0 }}"
+  with_nested:
+  - "{{ dockerfiles }}"
+  - "{{ images }}"
+  when:
+  - dockerfiles is defined
+  - "(item.0.split('-')[1]) in item.1.build.dockerfile"
+
+- name: "Configure | Deploy compose files"
+  template:
+    src: "{{ role_path }}/../actions/templates/docker-compose.yml.j2"
+    dest: "{{ compose_dir }}/docker-compose.yml"
+  tags:
+    - configure
+    - compose

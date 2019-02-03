@@ -1,24 +1,4 @@
 ---
-- hosts: deploy
-  tasks:
-  - setup:
-
-- import_playbook: pubkey.yml
-
-- hosts: deploy
-  gather_facts: yes
-  become: yes
-  tasks:
-  - include_role:
-      name: archive_binary
-    when: internet_available | bool
-
-- hosts: all
-  gather_facts: yes
-  become: yes
-  roles:
-    - { role: common }
-
 - hosts: registry
   gather_facts: yes
   roles:
@@ -41,3 +21,4 @@
   gather_facts: yes
   roles:
     - { role: jenkins, purge: false }
+

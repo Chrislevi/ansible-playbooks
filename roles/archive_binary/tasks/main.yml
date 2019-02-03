@@ -5,19 +5,18 @@
     msg: "No hostname resolvation detected, Please check your DNS."
   when: "internet_available == ''"
 
-- name: "Download external binaries"
-  get_url:
-    url: "{{ item.url }}"
-    dest: "{{ reqs_dir }}/{{ item.name }}"
-    sha256sum: "{{ item.sha256 }}"
-    validate_certs: no
-  with_items:
-  - "{{ binaries }}"
-  when:
-  - internet_available | bool
-  - binaries is defined
 
 - block:
+  - name: "Download external binaries"
+    get_url:
+      url: "{{ item.url }}"
+      dest: "{{ reqs_dir }}/{{ item.name }}"
+      sha256sum: "{{ item.sha256 }}"
+      validate_certs: no
+    with_items:
+    - "{{ binaries }}"
+    when:
+    - binaries is defined
 
   - name: "Install pip2pi"
     pip:

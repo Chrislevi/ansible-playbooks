@@ -7,6 +7,16 @@ jenkins_admin_pass: "admin"
 jenkins_admin_user: "admin"
 jenkins_data_vol: "jenkins-data"
 
+directories:
+  - "{{ compose_dir }}"
+  - "{{ config_dir }}"
+  - "{{ data_dir }}"
+
+templates:
+  - { file: "config.yml", dest: "{{ config_dir }}" }
+
+volumes:
+  - "{{ jenkins_data_vol }}"
 
 images:
   - name: "jenkins-master"

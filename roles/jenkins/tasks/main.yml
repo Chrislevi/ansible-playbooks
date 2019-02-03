@@ -1,16 +1,27 @@
 ---
-- name: "--> Archive"
+- name: "--> Configure Cluster Nodes"
+  include_tasks: ./configure_nodes.yml
+  with_items:
+    - "{{ groups['swarm-cluster'] }}"
+    - "{{ groups['deploy'] }}"
+  loop_control:
+    loop_var: target_host
+  tags:
+    - configure
+
+- name: "--> Archive Images"
   run_once: true
-  include_tasks: "archive-images.yml"
+  include_tasks: ./archive-images.yml
   with_items:
   - "{{ images }}"
   loop_control:
     loop_var: image
+  tags:
+    - archive
 
-- name: "--> Config"
-  include_tasks: ./configure_nodes.yml
-
-- name: "--> Run"
+- name: "--> Deploy Stack/Service"
   run_once: true
   delegate_to: "{{ swarm_master }}"
-  import_tasks: ./run.yml
+  import_tasks: "{{ role_path }}/../actions/tasks/run-stack.yml"
+  tags:
+    - run

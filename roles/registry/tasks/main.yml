@@ -1,17 +1,31 @@
 ---
-- name: "--> Archive"
+- name: "--> Configure Cluster Nodes"
+  vars:
+    registry_role: true # TODO FIXME (role_path | basename) not interable
+  include_tasks: ./configure_nodes.yml
+  with_items:
+    - "{{ groups['swarm-cluster'] }}"
+    - "{{ groups['deploy'] }}"
+  loop_control:
+    loop_var: target_host
+  tags:
+    - configure
+
+- name: "--> Archive Images"
   vars:
     registry_role: true # TODO FIXME role_path | basename not interable
   run_once: true
-  include_tasks: "archive-images.yml"
+  include_tasks: ./archive-images.yml
   with_items:
   - "{{ images }}"
   loop_control:
     loop_var: image
+  tags:
+    - archive
 
-- name: "--> Config"
-  include_tasks: ./configure_nodes.yml
-
-- name: "--> Run"
-  import_tasks: ./run.yml
+- name: "--> Deploy Stack/Service"
   run_once: true
+  delegate_to: "{{ inventory_hostname }}"
+  import_tasks: "{{ role_path }}/../actions/tasks/run-service.yml"
+  tags:
+    - run

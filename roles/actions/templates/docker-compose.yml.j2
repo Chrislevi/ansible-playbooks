@@ -5,13 +5,21 @@ networks:
   {{ docker_swarm_overlay.name }}:
     external: true
 
+{% if volumes is defined %}
 volumes:
-  {{ consul_docker_vol }}:
+{%   for vol in volumes %}
+  {{ vol }}:
+{%   endfor %}
+{% endif %}
 
 services:
 {% for image in images %}
   {{ image.name }}:
+{%   if not registry_role %}
     image: {{ registry_hostname }}/{{ image.prefix }}:{{ image.tag }}
+{%   else %}
+    image: {{ image.prefix }}:{{ image.tag }}
+{%   endif %}
 {%     if image.volumes is defined %}
     volumes:
 {{    image.volumes | to_nice_yaml | indent(6, true) }}
@@ -38,4 +46,20 @@ services:
     deploy:
 {{    image.deploy | to_nice_yaml | indent(6, true) }}
 {%     endif %}
+{%     if image.depends_on is defined %}
+    depends_on:
+{{    image.depends_on | to_nice_yaml | indent(6, true) }}
+{%     endif %}
 {% endfor %}
+
+{#
+
+If you have a new key which should be added to docker-compose files
+See an example of how to add new keys:
+
+{%     if image.example is defined %}
+    example:
+{{    image.example | to_nice_yaml | indent(6, true) }}
+{%     endif %}
+
+ #}

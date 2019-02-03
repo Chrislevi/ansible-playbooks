@@ -2,10 +2,10 @@
   "skip_leave_on_interrupt": true,
   "data_dir": "/consul/data",
   "datacenter": "{{ consul_datacenter }}",
-  "node_name": "{{ inventory_hostname }}",
+  "node_name": "{{ target_host }}",
   "client_addr": "0.0.0.0",
   "serf_lan": "0.0.0.0",
-  "advertise_addr": "{{ hostvars[inventory_hostname]['ansible_host'] }}",
+  "advertise_addr": "{{ hostvars[target_host]['ansible_host'] }}",
   "disable_update_check": true,
   "log_level": "INFO"
 }
