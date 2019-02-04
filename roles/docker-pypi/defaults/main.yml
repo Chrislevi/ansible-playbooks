@@ -1,0 +1,60 @@
+config_dir: "{{ pypi_config_dir | default(compose_dir) }}"
+data_dir: "{{ pypi_data_dir | default(compose_dir + '/data') }}"
+version: "{{ pypi_version | default('1.0.0') }}"
+stack_name: "{{ pypi_stack_name | default('pypi') }}"
+
+pypi_backup_os_user: vagrant
+
+dockerfiles:
+  - Dockerfile-loadbin
+  - Dockerfile-pypi
+
+templates:
+  - { file: "backup-repo.sh", dest: "{{ config_dir }}" }
+
+directories:
+  - "{{ compose_dir }}"
+
+images:
+  - name: "apache-pypi"
+    build:
+      dockerfile: "Dockerfile-pypi"
+      from: "ubuntu:xenial-20190122"
+    prefix: "apache-pypi"
+    tag: "{{ version }}"
+    ports:
+      - '80:80'
+    volumes:
+      - "{{ data_dir }}:/var/www/html"
+    networks:
+      - "{{ docker_swarm_overlay.name }}"
+    deploy:
+      endpoint_mode: vip
+      replicas: 1 # FIXME cant get int
+      mode: replicated
+      placement:
+        constraints: ["node.hostname == {{ groups['swarm-workers'][0] }}"]
+
+  - name: "loadbin-pypi"
+    build:
+      dockerfile: "Dockerfile-loadbin"
+      from: "ubuntu:xenial-20190122"
+    prefix: "loadbin-pypi"
+    tag: "{{ version }}"
+    command: debug
+    environment:
+      - AWS_ACCESS_KEY="{{ s3.access_key }}"
+      - AWS_SECRET_KEY="{{ s3.secret_key }}"
+      - BUCKET="{{ s3.bucket }}"
+      - OBJ_ENDPOINT="{{ s3.endpoint }}"
+      - OS_USER="{{ pypi_backup_os_user }}"
+    volumes:
+      - "{{ data_dir }}:/var/www/html"
+    networks:
+      - "{{ docker_swarm_overlay.name }}"
+    deploy:
+      endpoint_mode: vip
+      replicas: 1 # FIXME cant get int
+      mode: replicated
+      placement:
+        constraints: ["node.hostname ==  {{ groups['swarm-workers'][0] }}"]

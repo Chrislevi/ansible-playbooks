@@ -1,0 +1,8 @@
+FROM {{ registry_hostname }}/{{ item.1.build.from }}
+
+COPY backup-repo.sh /
+
+USER root
+RUN chmod +x /backup-repo.sh
+
+ENTRYPOINT ["bash", "-c", "/backup-repo.sh"]

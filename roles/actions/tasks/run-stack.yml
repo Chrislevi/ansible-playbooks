@@ -28,7 +28,7 @@
     name: "{{ stack_name }}"
     compose_file: "{{ compose_dir }}/docker-compose.yml"
   register: result
-  until: result | succeeded
+  until: result is succeeded
   retries: 5
   delay: 5
   failed_when: result is failure

@@ -1,5 +1,5 @@
 ---
-- hosts: swarm-cluster
+- hosts: swarm-managers[0]
   gather_facts: yes
   become: true
   roles:

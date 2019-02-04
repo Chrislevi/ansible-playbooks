@@ -1,18 +1,26 @@
 ---
-- name: "SET FACTS"
+- name: "SET_FACTS"
   set_fact:
     docker_image:
       hostname: "{{ image.name }}"
       ports: "{{ image.ports if image.ports is defined else '' }}"
       id: "{{ image.prefix }}:{{ image.tag }}"
       binary: "{{ image.name }}-{{ image.tag }}.image.tar"
+    # TODO FIXME output untrimmed
+    # registry_hostname: |
+    #   {%- if '80' not in registry_port | string -%}
+    #   {%-   set host_name = registry_host ~':'~ registry_port -%}
+    #   {%- else -%}
+    #   {%-   set host_name = registry_host -%}
+    #   {%- endif -%}
+    #   {{- (host_name) -}}
 
-- name: "Set docker images directory -> {{ archive_dir }}"
+- name: "Set DOCKER_IMAGE directory -> {{ archive_dir }}"
   set_fact:
     archive_dir: "{{ images_dir }}"
     local: true
 
-- name: "Set docker images directory -> {{ archive_dir }}"
+- name: "Set DOCKER_IMAGE directory -> {{ archive_dir }}"
   set_fact:
     archive_dir: "/tmp"
     local: false
@@ -26,7 +34,6 @@
     path: "{{ archive_dir }}"
     state: directory
 
-# --------------------------------
 - name: "Check {{ docker_image.binary }} exists"
   stat:
     path: "{{ images_dir }}/{{ docker_image.binary }}"
@@ -35,8 +42,10 @@
 - name: "Fetch {{ docker_image.binary }}"
   delegate_to: "{{ groups['registry'][0] }}"
   copy:
+  #synchronize:
     src: "{{ images_dir }}/{{ docker_image.binary }}"
     dest: "{{ archive_dir }}/{{ docker_image.binary }}"
+    # mode: push
   when:
   - not local | bool
   - registry_role | bool
@@ -49,16 +58,20 @@
     name: "{{ docker_image.id }}"
     repository: "{{ registry_hostname }}/{{ docker_image.id }}"
     load_path: "{{ archive_dir }}/{{ docker_image.binary }}"
-    #push: true
+    push: true
   when:
   - binary.stat.exists | bool
 
-# Archive FROM Images to build inside
 - block:
-  - name: "Check {{ image.build.from }} exists"
-    stat:
-      path: "{{ images_dir }}/{{ image.build.from }}.image.tar"
-    register: from_binary
+  - name: "Load {{ image.build.from }} to docker images"
+    delegate_to: "{{ groups['registry'][0] }}"
+    docker_image:
+      name: "{{ image.build.from }}"
+      repository: "{{ registry_hostname }}/{{ image.build.from }}"
+      load_path: "{{ archive_dir }}/{{ image.build.from }}.image.tar"
+      push: true
+    when:
+      - not internet_available | bool
 
   - name: "Archive -FROM- images: {{ image.build.from }}"
     become: true
@@ -66,42 +79,31 @@
       name: "{{ image.build.from }}"
       repository: "{{ registry_hostname }}/{{ image.build.from }}"
       archive_path: "{{ archive_dir }}/{{ image.build.from }}.image.tar"
+      pull: true
+      push: true
     when:
-      - not from_binary.stat.exists | bool
+      - not binary.stat.exists | bool
       - internet_available | bool
-
-  - name: "Load {{ image.build.from }} to docker images"
-    docker_image:
-      name: "{{ image.build.from }}"
-      repository: "{{ registry_hostname }}/{{ image.build.from }}"
-      load_path: "{{ archive_dir }}/{{ image.build.from }}.image.tar"
-    when:
-      - from_binary.stat.exists | bool
-
-  - name: "Tag & Push {{ registry_hostname }}/{{ image.build.from }}"
-    shell: "{{ item }}"
-    with_items:
-  #    - "docker tag {{ image.build.from }} {{ registry_hostname }}/{{ image.build.from }}"
-      - "docker push {{ registry_hostname }}/{{ image.build.from }}"
 
   - name: "Build image {{ docker_image.binary }}"
     docker_image:
       path: "{{ compose_dir }}"
-      dockerfile: "{{ image.build.dockerfile }}"
+      dockerfile: "Dockerfile-{{ image.build.dockerfile }}"
       name: "{{ registry_hostname }}/{{ image.name }}"
       tag: "{{ image.tag }}"
-      #push: yes
+      push: yes
 
   - name: "Archive -CUSTOM- images: {{ docker_image.binary }}"
     become: true
     docker_image:
       name: "{{ registry_hostname }}/{{ docker_image.id }}"
       archive_path: "{{ archive_dir }}/{{ docker_image.binary }}"
-      pull: no
+      pull: false
     when:
       - not binary.stat.exists | bool
-  when:
-    - image.build is defined
+      - internet_available | bool
+
+  when: image.build is defined
 
 - name: "Archive -PUBLIC- {{ docker_image.binary }}"
   become: true
@@ -114,14 +116,18 @@
     - internet_available | bool
     - image.build is not defined
 
-- name: "Tag & Push {{ registry_hostname }}/{{ docker_image.id }}"
-  shell: "{{ item }}"
-  with_items:
-  #  - "docker tag {{ docker_image.id }} {{ registry_hostname }}/{{ docker_image.id }}"
-    - "docker push {{ registry_hostname }}/{{ docker_image.id }}"
+- name: "Tag images {{ registry_hostname }}"
+  docker_image:
+    name: "{{ docker_image.id }}"
+    repository: "{{ registry_hostname }}/{{ docker_image.id }}"
+    pull: no
+  when: image.build is not defined
+
+- name: "Push images {{ registry_hostname }}/{{ docker_image.id }}"
+  shell: "docker push {{ registry_hostname }}/{{ docker_image.id }}"
   when:
-    - registry_role is defined
-    - not registry_role | bool
+    - registry_role is defined and not registry_role | bool
+    - image.build is not defined
 
 # TODO FIXME MODULE BUG https://github.com/ansible/ansible/issues/44077
 # - name: "Push images {{ registry_hostname }}/{{ docker_image.id }}"

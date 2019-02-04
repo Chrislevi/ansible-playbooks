@@ -1,0 +1,56 @@
+---
+- import_tasks: "{{ role_path }}/../actions/tasks/configure_nodes.yml"
+  delegate_to: "{{ target_host }}"
+  tags:
+    - configure
+
+# ---
+# - name: "Configure | Create {{ stack_name }} dirs"
+#   become: True
+#   file:
+#     dest: "{{ item }}"
+#     state: directory
+#     owner: "{{ ansible_user }}"
+#   with_items:
+#     - "{{ config_dir }}"
+#     - "{{ compose_dir }}"
+#
+# # - name: "Configure | Create {{ stack_name }} dirs on localhost"
+# #   delegate_to: "{{ groups['deploy'][0] }}"
+# #   become: True
+# #   file:
+# #     dest: "{{ item }}"
+# #     state: directory
+# #     owner: "{{ ansible_user }}"
+# #   with_items:
+# #     - "{{ config_dir }}"
+# #     - "{{ compose_dir }}"
+#
+# - name: "Configure | Copy context files"
+#   copy:
+#     src: "{{ item }}"
+#     dest: "{{ config_dir }}/{{ item }}"
+#   with_items:
+#   - plugins.txt
+#
+# - name: "Configure | Deploy compose files"
+#   template:
+#     src: "{{ item.0 }}.j2"
+#     dest: "{{ compose_dir }}/{{ item.0 }}"
+#   with_nested:
+#   - "{{ dockerfiles }}"
+#   - "{{ images }}"
+#   when:
+#   - dockerfiles is defined
+#   - "(item.0.split('-')[1]) in item.1.build.dockerfile"
+#
+# - name: "Configure | Deploy compose files"
+#   template:
+#     src: "{{ item }}.j2"
+#     dest: "{{ compose_dir }}/{{ item }}"
+#     #lstrip_blocks: true
+#   with_items:
+#   - docker-compose.yml
+#   - backup-repo.sh
+#   tags:
+#   - compose
