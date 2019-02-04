@@ -1,0 +1,10 @@
+FROM {{ registry_hostname }}/{{ item.1.build.from }}
+
+#COPY sources.list /etc/apt/sources.list
+RUN apt update || /bin/true && \
+    apt install -y apache2 apache2-utils
+
+RUN sed -i -e 's/\/var\/www/\/var\/www\/html/' /etc/apache2/apache2.conf
+
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]

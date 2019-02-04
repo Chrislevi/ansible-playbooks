@@ -1,35 +1,4 @@
----
-- name: "Configure | Create {{ stack_name }} dirs"
-  become: True
-  file:
-    dest: "{{ item }}"
-    state: directory
-    owner: "{{ ansible_user }}"
-  with_items:
-    - "{{ config_dir }}"
-    - "{{ compose_dir }}"
-
-- name: "Configure | Deploy config"
-  template:
-    lstrip_blocks: true
-    src: "{{ item }}.j2"
-    dest: "{{ config_dir }}/{{ item }}"
-  with_items:
-   - config.yml
-
-- name: "Configure | Copy context files"
-  copy:
-    src: "{{ item }}"
-    dest: "{{ config_dir }}/{{ item }}"
-  with_items:
-  - plugins.txt
-
-- name: "Configure | Deploy compose files"
-  template:
-    src: "{{ item }}.j2"
-    dest: "{{ compose_dir }}/{{ item }}"
-    #lstrip_blocks: true
-  with_items:
-  - docker-compose.yml
+- import_tasks: "{{ role_path }}/../actions/tasks/configure_nodes.yml"
+  delegate_to: "{{ target_host }}"
   tags:
-  - compose
+    - configure

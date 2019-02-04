@@ -1,7 +1,17 @@
 # ------------------------------------------ General -------------------------------------------- #
-
 become: True
-fetch: always # [always | false]
+
+# Purge volumes,configs,data
+purge: False
+
+# Fetch pip binaries
+fetch_pip: True
+
+# TODO FIXME Add registry IP to host files
+edit_hosts: True
+
+# Pull image from local private registry
+#from_registry: True
 
 domain_name: "default.local"
 dns_server: "8.8.8.8"
@@ -12,7 +22,7 @@ reqs_dir: "{{ work_dir }}/reqs"
 images_dir: "{{ reqs_dir }}/images"
 pypi_dir: "{{ reqs_dir }}/pack"
 project_data_dir: "/DATA"
-compose_dir: "{{ project_data_dir }}/compose/{{ role_path | basename }}"
+compose_dir: "{{ project_data_dir }}/{{ role_path | basename }}"
 
 compose_api_version: "3.4"
 
@@ -60,9 +70,11 @@ consul_bind_interface: eth1
 
 #registry_host: "{{ lookup('dig', ansible_host) }}"
 
-s3_storage:
-  enabled: false
+s3:
+  endpoint: ""
+  bucket: ""
   access_key: ""
   secret_key: ""
 
 ansible_python_interpreter: "/usr/bin/env python"
+ansible_deb_version: 2.7.6

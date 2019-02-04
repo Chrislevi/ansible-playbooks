@@ -1,5 +1,4 @@
-#binaries:
- # - {url: "https://pypi.python.org/packages/42/c5/c324f84726a4c2ef56d88c7a3ec1dbda5cbfeaf35fc9f314eef1b44e7959/python-gitlab-0.20.tar.gz", name: "python-gitlab-0.20.tar.gz", md5: "0663301d7ef92cab999cde67a26c5dd4", sha256: "028cb3f13c968f93315159686bf3cc2f693cd84585c9f0f807d0869a579fefbf"}
- # - {url: "http://download.sonatype.com/nexus/3/nexus-{{ nexus_version }}-unix.tar.gz", name: "nexus-{{ nexus_version }}-unix.tar.gz", md5: "54cf2d9da3cdeb6ab7dc54f0008bf9a7", sha256: "2faddb5ac3d8b58a0a6d305a0050c846e6c708562e561e55a6c280169f89fce8"}
- # - {url: "https://launchpad.net/~ansible/+archive/ubuntu/ansible/+files/ansible_2.3.2.0-1ppa~xenial_all.deb", name: "ansible_2.3.2.0-1ppa~xenial_all.deb", md5: "f897d13ab7ef28eb4bd9a5c4b856715a", sha256: "03bc2195a76d7a2af7f42b0b873682f2fd9618acddaaef189315da3fe702fef8"}
- #  - {url: "http://pkg.jenkins-ci.org/debian/binary/jenkins_{{ cj_version }}_all.deb", name: "jenkins_{{ cj_version }}_all.deb", md5: "8a4e8df4feb1c6a7c45a76e8a44be664", sha256: "f2c2597c7d983b0bb454a89c64028361046e05c28847c08deb51fd3307343af9"}
+binaries:
+ - {url: "https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64/docker-ce_{{ docker_version }}~3-0~ubuntu-xenial_amd64.deb", name: "docker-ce_{{ docker_version }}~3-0~ubuntu-xenial_amd64.deb", sha256: "338a440f423c76ad475e2f22ed6553f2d1f4d2ac3ee635fe818be2699aa39c36"}
+ - {url: "https://launchpad.net/~ansible/+archive/ubuntu/ansible/+files/ansible_{{ ansible_deb_version }}-1ppa~xenial_all.deb", name: "ansible_{{ ansible_deb_version }}-1ppa~xenial_all.deb", sha256: "ffea93e96616c3ac6e8b9b57aa218dd34560215436bd34ec4c7493e16c1b3e00"}
+# TODO FIXME Add compose

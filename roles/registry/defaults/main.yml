@@ -1,5 +1,12 @@
 data_dir: "{{ registry_data_dir | default(compose_dir) }}/.data"
 
+directories:
+  - "{{ compose_dir }}"
+  - "{{ data_dir }}"
+
+local_volumes:
+  - "{{ data_dir }}"
+
   # - name: "gui"
   #   restart: always
   #   prefix: "konradkleine/docker-registry-frontend"
@@ -13,7 +20,7 @@ data_dir: "{{ registry_data_dir | default(compose_dir) }}/.data"
   #     - registry
 
 images:
-  - name: "gui2"
+  - name: "gui"
     restart: always
     prefix: joxit/docker-registry-ui
     tag: static

@@ -1,0 +1,44 @@
+---
+- name: "Service | Remove {{ role_path | basename }} service"
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    state: absent
+  ignore_errors: true
+  register: compose
+  when: purge
+  tags:
+    - purge
+    - run
+
+- name: "Service | Remove {{ role_path | basename }} docker volumes"
+  delegate_to: "{{ item.0 }}"
+  docker_volume:
+    name: "{{ item.1 }}"
+    state: absent
+    force: yes
+  when:
+    - purge
+    - volumes is defined
+  ignore_errors: true
+  with_nested:
+    - "{{ groups['swarm-cluster'] }}"
+    - "{{ volumes }}"
+  tags:
+    - purge
+    - run
+
+
+- name: "Service | Deploy {{ role_path | basename }} service"
+  become: true
+  docker_service:
+    project_src: "{{ compose_dir }}"
+    remove_orphans: true
+    state: present
+    restarted: true
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 5
+  failed_when: result is failure
+  tags:
+    - run

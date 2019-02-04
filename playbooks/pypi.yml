@@ -1,6 +1,6 @@
 ---
 - hosts: swarm-managers[0]
-  become: true
   gather_facts: yes
+  become: true
   roles:
-    - { role: consul, purge: false }
+    - { role: docker-pypi }

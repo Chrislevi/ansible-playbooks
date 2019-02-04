@@ -1,0 +1,34 @@
+---
+- name: "Stack | Remove {{ stack_name }} stack"
+  docker_stack:
+    state: absent
+    name: "{{ stack_name }}"
+    compose_file: "{{ compose_dir }}/docker-compose.yml"
+    prune: yes
+  ignore_errors: true
+  when: purge
+
+- name: "Stack | Remove {{ role_path | basename }} docker volumes"
+  delegate_to: "{{ item.0 }}"
+  docker_volume:
+    name: "{{ item.1 }}"
+    state: absent
+    force: yes
+  when:
+    - purge
+    - volumes is defined
+  ignore_errors: true
+  with_nested:
+    - "{{ groups['swarm-cluster'] }}"
+    - "{{ volumes }}"
+
+- name: "Stack | Deploy {{ stack_name }} stack"
+  docker_stack:
+    state: present
+    name: "{{ stack_name }}"
+    compose_file: "{{ compose_dir }}/docker-compose.yml"
+  register: result
+  until: result is succeeded
+  retries: 5
+  delay: 5
+  failed_when: result is failure

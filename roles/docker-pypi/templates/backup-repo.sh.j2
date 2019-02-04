@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+
+DATA=/var/www/html/simple
+USER=${OS_USER:-vagrant}
+TIME=pypi-`/bin/date +%d-%m-%y`
+DEST=/home/$USER
+TAR=$DEST/$TIME.tar.gz
+#ENV_FILE=${ENV_FILE:-'.env'}
+
+BUCKET=${BUCKET:-'example-repo-backup'}
+OBJ_ENDPOINT=${OBJ_ENDPOINT:-"http://s3.aws.com"}
+
+msg="
+Backing up: $DATA
+Endpoint: ${OBJ_ENDPOINT}
+
+Usage: [backup|restore|list]
+"
+
+function tar_backup() {
+  echo "Backing up $DATA to s3://$BUCKET on $TIME"
+  tar cvf $TAR -C $DATA .
+}
+
+function install_deps() {
+  if [ ! -f /usr/bin/aws ]
+  then
+    sudo apt install -y awscli
+  fi
+}
+
+function load_creds() {
+  rm -rf ~/.aws || /bin/true
+
+  #Load ENV vars
+  #for var in $(cat ${ENV_FILE});do export $var; done
+
+  if [ -z $AWS_ACCESS_KEY ] && [ -z $AWS_SECRET_KEY ]
+  do
+    echo "Must provide AWS_ACCESS_KEY and AWS_SECRET_KEY environment variables"
+    exit 1
+  fi
+
+  aws configure set default.aws_access_key_id ${AWS_ACCESS_KEY}
+  aws configure set default.aws_secret_access_key ${AWS_SECRET_KEY}
+  aws configure set default.s3.addressing_style path
+  aws configure set default.s3.max_concurrent_requests 20
+  aws configure set default.s3.max_queue_size 10000
+  aws configure set default.s3.multipart_threshold 30MB
+  aws configure set default.s3.multipart_chunksize 15MB
+}
+
+function list() {
+  install_deps
+  load_creds
+  aws s3 ls s3://${BUCKET} --endpoint-url ${OBJ_ENDPOINT}
+}
+
+function restore() {
+  install_deps
+  load_creds
+  mkdir -p $DATA || /bin/true
+
+  aws s3 cp s3://${BUCKET}/$1 /tmp/$1 --endpoint-url ${OBJ_ENDPOINT}
+  cd $DATA
+  tar -kxvf /tmp/$1 . > /dev/null 2>&1
+
+  echo "Restored: $1 to $DATA from s3://$BUCKET"
+}
+
+function backup() {
+  tar_backup
+  install_deps
+  load_creds
+
+  # Create BUCKET
+  aws s3api create-bucket --bucket ${BUCKET} --endpoint-url ${OBJ_ENDPOINT}
+
+  echo "Uploading.."
+  aws s3 cp $TAR s3://${BUCKET}/ \
+                 --endpoint-url ${OBJ_ENDPOINT}
+
+  echo "Done."
+  echo "Updating Latest.."
+  aws s3 cp s3://${BUCKET}/${TIME}.tar.gz \
+            s3://${BUCKET}/latest.tar.gz \
+            --endpoint-url ${OBJ_ENDPOINT}
+
+  RC=$?
+  if [ $RC -eq 0 ]
+  then
+    echo "Done."
+    echo "Backup available at ${OBJ_ENDPOINT}/${BUCKET}/${TIME}.tar.gz"
+    rm -f $TAR || /bin/true
+  fi
+}
+
+case $1 in
+  backup) backup;;
+  restore) restore $2;;
+  list) list;;
+  debug) echo "bucket: $BUCKET\n \
+               endpoint: $OBJ_ENDPOINT \n \
+               access_key: ${AWS_ACCESS_KEY} \n \
+               data: $DATA \n \
+               user: $USER \n \
+               time: $TIME \n \
+               dest: $DEST \n \
+               tar: $TAR"
+  *) echo "$msg"
+     exit 1;;
