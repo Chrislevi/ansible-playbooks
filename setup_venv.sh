@@ -1,7 +1,7 @@
 #!/bin/bash
 set -x
 WORK_DIR=$(pwd)
-REQS_DIR=${WORK_DIR}/reqs/pip2pi
+REQS_DIR=${WORK_DIR}/reqs/pack
 VENV_DIR=${WORK_DIR}/.ansible_venv
 
 sudo apt install -y python-pip \
@@ -21,15 +21,20 @@ sudo apt install -y python-pip \
                     sshpass \
                     openssl
 
-rm -f /usr/bin/python
-ln -s /usr/bin/python3.5 /usr/bin/python
+#rm -f /usr/bin/python
+#ln -s /usr/bin/python3.5 /usr/bin/python
 
 #rm -rf ${VENV_DIR} || /bin/true
 #virtualenv -p python3 ${VENV_DIR}
 #source ${VENV_DIR}/bin/activate
-pip3 install pip2pi
+#pip3 install pip2pi
 
-pip2pi ${REQS_DIR} -r requirements.txt
+#pip2pi ${REQS_DIR} -r requirements.txt
+
+for deb in $(ls $WORK_DIR/reqs | grep "*.deb")
+do
+    dpkg -i $WORK_DIR/reqs/${deb}
+done
 
 mkdir -p ${REQS_DIR}
 pip3 install -U -r requirements.txt

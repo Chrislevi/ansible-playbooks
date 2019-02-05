@@ -1,10 +1,10 @@
 ---
-- hosts: all
+- hosts: '{{ target_hosts | d("all") }}'
   become: true
   roles:
       - { role: common }
 
-- hosts: registry
+- hosts: '{{ target_hosts | d("registry") }}'
   become: true
   roles:
       - { role: registry, purge: false }

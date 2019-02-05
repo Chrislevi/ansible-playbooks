@@ -1,20 +1,26 @@
 ---
-- hosts: localhost
-  gather_facts: true
-  become: yes
+- hosts: '{{ hosts | d("swarm-cluster[0]") }}'
+  # gather_facts: true
   tasks:
-  - debug:
-      msg: "{{ python_packages | join(' ') }}"
-
-  - name: "Archive pip packages"
-    shell: 'pip2pi {{ pypi_dir }} {{ item }}'
-    with_items:
-      - "{{ python_packages }}"
-
-  - name: "Install | Pip requiremnets"
-    pip:
-      name: "{{ item }}"
-      extra_args: "--no-index --find-links file:///{{ pypi_dir }}"
-      state: latest
-    with_items:
-      - "{{ python_packages }}"
+    - debug:
+        msg: "{{ ansible_python_interpreter }} : {{ ansible_python_version }}"
+# ---
+# - hosts: localhost
+#   gather_facts: true
+#   become: yes
+#   tasks:
+#   - debug:
+#       msg: "{{ python_packages | join(' ') }}"
+#
+#   - name: "Archive pip packages"
+#     shell: 'pip2pi {{ pypi_dir }} {{ item }}'
+#     with_items:
+#       - "{{ python_packages }}"
+#
+#   - name: "Install | Pip requiremnets"
+#     pip:
+#       name: "{{ item }}"
+#       extra_args: "--no-index --find-links file:///{{ pypi_dir }}"
+#       state: latest
+#     with_items:
+#       - "{{ python_packages }}"

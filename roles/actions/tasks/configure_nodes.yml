@@ -36,6 +36,7 @@
     - "{{ directories }}"
   tags:
     - configure
+    - archive
 
 - name: "Configure | Deploy config files"
   template:
@@ -48,6 +49,7 @@
     - templates is defined
   tags:
     - configure
+    - archive
 
 - name: "Configure | Deploy dockerfiles"
   template:
@@ -59,6 +61,8 @@
   when:
   - dockerfiles is defined
   - "(item.0.split('-')[1]) in item.1.build.dockerfile"
+  tags:
+    - archive
 
 - name: "Configure | Deploy compose files"
   template:

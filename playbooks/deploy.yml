@@ -1,11 +1,13 @@
 ---
-- hosts: deploy
+- hosts: '{{ target_hosts | d("deploy") }}'
   tasks:
   - setup:
 
 - import_playbook: pubkey.yml
 
-- hosts: deploy
+- hosts: '{{ target_hosts | d("deploy") }}'
+  tags:
+    - archive
   gather_facts: yes
   become: yes
   tasks:
@@ -13,36 +15,36 @@
       name: archive_binary
     when: internet_available | bool
 
-- hosts: all
+- hosts: '{{ target_hosts | d("all") }}'
   gather_facts: yes
   become: yes
   roles:
     - { role: common }
 
-- hosts: registry
+- hosts: '{{ target_hosts | d("registry") }}'
   gather_facts: yes
   roles:
     - { role: registry, purge: false}
 
-- hosts: swarm-cluster
+- hosts: '{{ target_hosts | d("swarm-cluster") }}'
   become: yes
   gather_facts: yes
   roles:
     - { role: docker-swarm }
 
-- hosts: swarm-managers[0]
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
   become: true
   gather_facts: yes
   roles:
     - { role: consul, purge: false }
 
-- hosts: swarm-managers[0]
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
   become:
   gather_facts: yes
   roles:
     - { role: jenkins, purge: false }
 
-- hosts: swarm-managers[0]
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
   become:
   gather_facts: yes
   roles:

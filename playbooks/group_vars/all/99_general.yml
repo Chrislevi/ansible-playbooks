@@ -76,5 +76,4 @@ s3:
   access_key: ""
   secret_key: ""
 
-ansible_python_interpreter: "/usr/bin/env python"
 ansible_deb_version: 2.7.6

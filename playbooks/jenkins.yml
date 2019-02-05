@@ -1,5 +1,5 @@
-- hosts: jenkins-master
-  become:
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
+  become: yes
   gather_facts: yes
   roles:
     - { role: jenkins, purge: false }

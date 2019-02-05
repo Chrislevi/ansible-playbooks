@@ -1,9 +1,9 @@
 ---
-- hosts: deploy
+- hosts: '{{ target_hosts | d("deploy") }}'
   tasks:
   - setup:
 
-- hosts: deploy
+- hosts: '{{ target_hosts | d("deploy") }}'
   gather_facts: yes
   become: yes
   tasks:
@@ -11,7 +11,7 @@
       name: archive_binary
     when: internet_available | bool
 
-- hosts: all
+- hosts: '{{ target_hosts | d("all") }}'
   gather_facts: yes
   become: yes
   roles:
