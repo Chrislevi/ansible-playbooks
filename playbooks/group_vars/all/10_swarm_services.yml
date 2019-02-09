@@ -29,6 +29,13 @@ services:
     tags:
       - "jenkins"
 
+  - name: "swarm-dashboard"
+    id: "swarm-dashboard"
+#    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    port: 9091
+    tags:
+      - "swarm"
+
 # jenkins_config_dir: "{{ compose_dir }}"
 # jenkins_data_dir: "/var/lib/jenkins"
 # jenkins_version: 2.138.3

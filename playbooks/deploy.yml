@@ -39,6 +39,12 @@
     - { role: consul, purge: false }
 
 - hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
+  become: true
+  gather_facts: yes
+  roles:
+    - { role: swarm-dashboard, purge: false }
+
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
   become:
   gather_facts: yes
   roles:

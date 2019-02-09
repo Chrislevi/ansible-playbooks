@@ -145,6 +145,8 @@
   tags:
     - archive
 
+# TODO FIXME bug, pushing a newly pulled image is faliling
+
 - name: "Tag & Push {{ registry_hostname }}/{{ docker_image.id }}"
   shell: "{{ item }}"
   with_items:

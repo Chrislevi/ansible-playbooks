@@ -1,0 +1,4 @@
+- import_tasks: "{{ role_path }}/../actions/tasks/configure_nodes.yml"
+  delegate_to: "{{ target_host }}"
+  tags:
+    - configure

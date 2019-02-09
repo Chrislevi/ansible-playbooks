@@ -105,6 +105,8 @@ images:
         - traefik.tags=traefik
         - traefik.docker.network=swarm_network
         - traefik.redirectorservice.frontend.entryPoints=http
+        - traefik.backend.loadbalancer.swarm=true
+        - traefik.backend.loadbalancer.method=drr
         # - traefik.redirectorservice.frontend.redirect.entryPoint=https
         # # Traefik service that listens to HTTPS
         # - traefik.webservice.frontend.entryPoints=https

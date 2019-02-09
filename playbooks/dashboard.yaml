@@ -1,0 +1,5 @@
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
+  become: yes
+  gather_facts: yes
+  roles:
+    - { role: swarm-dashboard, purge: false }
