@@ -1,0 +1,8 @@
+{% for host in groups['swarm-managers'] %}
+nameserver {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+nameserver {{ dns_server }}
+search {{ domain_name }}
+{#
+{{ old_resolv.stdout_lines }}
+#}

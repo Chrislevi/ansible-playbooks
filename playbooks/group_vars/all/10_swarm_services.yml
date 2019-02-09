@@ -1,11 +1,33 @@
 # Uncomment to inject values to default
 
 services:
-  swarm:
-    apply_to: "swarm-cluster"
-    ports:
-      - 2375
-      - 2377
+  - name: "registry"
+    id: "registry"
+    address: "{{ registry_ip }}"
+    port: 5005
+    tags:
+      - "registry"
+
+  - name: "swarm"
+    id: "swarm"
+#    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    port: 2377
+    tags:
+      - "swarm"
+
+  - name: "traefik"
+#    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    id: "traefik"
+    port: 8080
+    tags:
+      - "traefik"
+
+  - name: "jenkins"
+#    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    id: "jenkins"
+    port: 8081
+    tags:
+      - "jenkins"
 
 # jenkins_config_dir: "{{ compose_dir }}"
 # jenkins_data_dir: "/var/lib/jenkins"

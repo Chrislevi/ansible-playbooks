@@ -21,16 +21,16 @@
   roles:
     - { role: common }
 
-- hosts: '{{ target_hosts | d("registry") }}'
-  gather_facts: yes
-  roles:
-    - { role: registry, purge: false}
-
 - hosts: '{{ target_hosts | d("swarm-cluster") }}'
   become: yes
   gather_facts: yes
   roles:
     - { role: docker-swarm }
+
+- hosts: '{{ target_hosts | d("registry-nodes") }}'
+  gather_facts: yes
+  roles:
+    - { role: registry, purge: false}
 
 - hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
   become: true
@@ -44,8 +44,8 @@
   roles:
     - { role: jenkins, purge: false }
 
-- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
-  become:
-  gather_facts: yes
-  roles:
-    - { role: docker-pypi, purge: false }
+      #- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
+      #  become:
+      #  gather_facts: yes
+      #  roles:
+      #    - { role: docker-pypi, purge: false }

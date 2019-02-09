@@ -50,3 +50,10 @@ images:
       mode: replicated
       placement:
         constraints: [node.role ==  worker]
+      labels:
+        - traefik.frontend.rule=Host:jenkins.service.consul
+        - traefik.enable=true
+        - "traefik.port=8080"
+        - traefik.tags=jenkins
+        - traefik.docker.network=swarm_network
+        - traefik.redirectorservice.frontend.entryPoints=http

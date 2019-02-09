@@ -13,8 +13,7 @@ edit_hosts: True
 # Pull image from local private registry
 #from_registry: True
 
-domain_name: "default.local"
-dns_server: "8.8.8.8"
+domain_name: "consul"
 vagrant_dir: "{{ work_dir }}/.vagrant"
 work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
 playbooks_dir: "{{ work_dir }}/playbooks"
@@ -61,10 +60,10 @@ registry_gui_port: 9090
 registry_port: 5005
 registry_host: "registry"
 registry_role: false
-#registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
+registry_ip: "{{ hostvars[groups['registry-nodes'][0]]['ansible_host'] }}"
 registry_hostname: "{{ registry_host }}:{{ registry_port }}"
 
-jenkins_port: "8080"
+jenkins_port: "8081"
 consul_proxy_port: 8888
 consul_bind_interface: eth1
 

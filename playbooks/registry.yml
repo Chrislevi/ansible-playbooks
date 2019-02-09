@@ -4,7 +4,7 @@
   roles:
       - { role: common }
 
-- hosts: '{{ target_hosts | d("registry") }}'
+- hosts: '{{ target_hosts | d("registry-nodes") }}'
   become: true
   roles:
       - { role: registry, purge: false }

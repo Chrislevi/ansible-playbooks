@@ -5,8 +5,8 @@
       hostname: "{{ image.name }}"
       ports: "{{ image.ports if image.ports is defined else '' }}"
       id: "{{ image.prefix }}:{{ image.tag }}"
-      binary: "{{ image.name }}-{{ image.tag }}.image.tar"
-      #binary: "{{ image.prefix.split('/')[-1] }}-{{ image.tag }}.image.tar"
+      #binary: "{{ image.name }}-{{ image.tag }}.image.tar"
+      binary: "{{ image.prefix.split('/')[-1] }}-{{ image.tag }}.image.tar"
   tags:
     - archive
 
@@ -23,7 +23,7 @@
     local: false
   when:
   - registry_role | bool
-  - "'local' not in groups['registry'][0]"
+  - "'local' not in groups['registry-nodes'][0]"
   tags:
     - archive
 
@@ -44,7 +44,7 @@
     - archive
 
 - name: "Fetch {{ docker_image.binary }}"
-  delegate_to: "{{ groups['registry'][0] }}"
+  delegate_to: "{{ groups['registry-nodes'][0] }}"
   copy:
     src: "{{ images_dir }}/{{ docker_image.binary }}"
     dest: "{{ archive_dir }}/{{ docker_image.binary }}"
@@ -57,7 +57,7 @@
     - archive
 
 - name: "Load {{ docker_image.binary }} to docker images"
-  delegate_to: "{{ groups['registry'][0] }}"
+  delegate_to: "{{ groups['registry-nodes'][0] }}"
   docker_image:
     name: "{{ docker_image.id }}"
     repository: "{{ registry_hostname }}/{{ docker_image.id }}"

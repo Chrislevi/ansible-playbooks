@@ -1,3 +1,33 @@
+---
+- name: "Purge old lines"
+  lineinfile:
+    path: /etc/hosts
+    regex: "registry"
+    state: absent
+  when: edit_hosts | bool
+
+- name: "Configure Registry DNS"
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ registry_ip }}  {{ registry_host }}"
+  when: edit_hosts | bool
+  tags:
+    - hosts
+
+- shell: "cat /etc/resolv.conf"
+  register: old_resolv
+  tags:
+    - resolv
+
+- name: "Deploy resolv.conf"
+  # vars:
+  #   old_resolv: "{{  }}"
+  template:
+    src: resolv.conf.j2
+    dest: /etc/resolv.conf
+  tags:
+    - resolv
+
 - name: "Install common packages"
   become: true
   package:
@@ -13,30 +43,16 @@
   static: no
   when: "'apt' in ansible_pkg_mgr"
 
-- debug:
-    msg: "{{ registry_hostname }}"
-
-- name: "REGISTRY on DEPLOYER"
-  set_fact:
-    registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_default_ipv4']['address'] }}"
-  when:
-  - "'localhost' in hostvars[groups['registry'][0]]['ansible_host']"
-
-- name: "REGISTRY on REMOTE"
-  set_fact:
-    registry_ip: "{{ hostvars[groups['registry'][0]]['ansible_host'] }}"
-  when:
-  - "'localhost' not in hostvars[groups['registry'][0]]['ansible_host']"
-
-- name: "Purge old lines"
-  lineinfile:
-    path: /etc/hosts
-    regex: "registry"
-    state: absent
-  when: edit_hosts | bool
-
-- name: "Configure Registry DNS"
-  lineinfile:
-    path: /etc/hosts
-    line: "{{ registry_ip }}  {{ registry_host }}"
-  when: edit_hosts | bool
+# - name: "Add domain to resolv.conf"
+#   lineinfile:
+#     path: /etc/resolv.conf
+#     line: "search  {{ domain_name }}"
+#   when: edit_hosts | bool
+#
+# - name: "consul dns to resolv.conf"
+#   lineinfile:
+#     path: /etc/resolv.conf
+#     line: "nameserver  {{ hostvars[item]['ansible_host'] }}"
+#   when: edit_hosts | bool
+#   with_items:
+#     - "{{ groups['swarm-managers'] }}"

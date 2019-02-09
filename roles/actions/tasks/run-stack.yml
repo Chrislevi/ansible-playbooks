@@ -8,10 +8,18 @@
   ignore_errors: true
   when: purge
 
+- name: "Wait for containers to stop"
+  shell: "docker stack ps {{ stack_name }}"
+  register: output
+  ignore_errors: true
+  until: "'nothing found in stack' in output.stderr"
+  delay: 3
+  retries: 60
+
 - name: "Stack | Remove {{ role_path | basename }} docker volumes"
   delegate_to: "{{ item.0 }}"
   docker_volume:
-    name: "{{ item.1 }}"
+    name: "{{ stack_name }}_{{ item.1 }}"
     state: absent
     force: yes
   when:
@@ -23,6 +31,7 @@
     - "{{ volumes }}"
 
 - name: "Stack | Deploy {{ stack_name }} stack"
+  become: true
   docker_stack:
     state: present
     name: "{{ stack_name }}"

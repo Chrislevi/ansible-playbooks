@@ -3,3 +3,4 @@ reqs
 .ansible_venv
 ./playbooks/test.yml
 playbooks/test.yml
+.DS_Store

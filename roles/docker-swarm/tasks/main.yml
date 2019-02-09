@@ -7,6 +7,18 @@
   when:
   - master is defined
   - master
+  # failed_when:
+  # - "'This node is already part of a swarm' not in swarm_init.msg"
+  # - swarm_init.failed
+
+- name: Get swarm info
+  docker_swarm:
+    state: inspect
+    remote_addrs: ['{{ ansible_host }}:2377']
+  register: swarm_info
+  when:
+  - master is defined
+  - master
 
 - name: "Initialize | Save swarm JoinTokens"
   delegate_to: local

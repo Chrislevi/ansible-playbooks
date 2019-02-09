@@ -1,5 +1,5 @@
 ---
-- hosts: '{{ target_hosts | d("registry") }}'
+- hosts: '{{ target_hosts | d("registry-nodes") }}'
   gather_facts: yes
   roles:
     - { role: registry, purge: false}

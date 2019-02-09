@@ -1,3 +1,1 @@
-# registry_hostname: registry
-# registry_host: "{{ hostvars[groups['registry'][0]].ansible_host }}"
-# registry_port: "5005"
+dns_server: "8.8.8.8"
