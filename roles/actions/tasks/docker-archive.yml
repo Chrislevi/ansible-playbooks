@@ -72,7 +72,7 @@
 - block:
   - name: "Check {{ image.build.from }} exists"
     stat:
-      path: "{{ images_dir }}/{{ image.build.from }}.image.tar"
+      path: "{{ images_dir }}/{{ image.build.from.split(':')[0] }}-{{ image.build.from.split(':')[1] }}.image.tar"
     register: from_binary
     tags:
       - archive
@@ -82,7 +82,7 @@
     docker_image:
       name: "{{ image.build.from }}"
       repository: "{{ registry_hostname }}/{{ image.build.from }}"
-      archive_path: "{{ archive_dir }}/{{ image.build.from }}.image.tar"
+      archive_path: "{{ archive_dir }}/{{ image.build.from.split(':')[0] }}-{{ image.build.from.split(':')[1] }}.image.tar"
     when:
       - not from_binary.stat.exists | bool
       - internet_available | bool
@@ -93,7 +93,7 @@
     docker_image:
       name: "{{ image.build.from }}"
       repository: "{{ registry_hostname }}/{{ image.build.from }}"
-      load_path: "{{ archive_dir }}/{{ image.build.from }}.image.tar"
+      load_path: "{{ archive_dir }}/{{ image.build.from.split(':')[0] }}-{{ image.build.from.split(':')[1] }}.image.tar"
     when:
       - from_binary.stat.exists | bool
     tags:
@@ -102,7 +102,7 @@
   - name: "Tag & Push {{ registry_hostname }}/{{ image.build.from }}"
     shell: "{{ item }}"
     with_items:
-  #    - "docker tag {{ image.build.from }} {{ registry_hostname }}/{{ image.build.from }}"
+      - "docker tag {{ image.build.from }} {{ registry_hostname }}/{{ image.build.from }}"
       - "docker push {{ registry_hostname }}/{{ image.build.from }}"
     tags:
       - push
@@ -111,7 +111,7 @@
     docker_image:
       path: "{{ compose_dir }}"
       dockerfile: "{{ image.build.dockerfile }}"
-      name: "{{ registry_hostname }}/{{ image.name }}"
+      name: "{{ image.name }}"
       tag: "{{ image.tag }}"
       pull: no
       #push: yes
@@ -121,7 +121,7 @@
   - name: "Archive -CUSTOM- images: {{ docker_image.binary }}"
     become: true
     docker_image:
-      name: "{{ registry_hostname }}/{{ docker_image.id }}"
+      name: "{{ docker_image.id }}"
       archive_path: "{{ archive_dir }}/{{ docker_image.binary }}"
       pull: no
     when:
@@ -145,12 +145,15 @@
   tags:
     - archive
 
-# TODO FIXME bug, pushing a newly pulled image is faliling
+- name: "Check if image is loaded"
+  shell: "docker images -q -f 'reference={{ docker_image.id }}' | wc -l"
+  register: image_loaded
 
 - name: "Tag & Push {{ registry_hostname }}/{{ docker_image.id }}"
   shell: "{{ item }}"
   with_items:
-  #  - "docker tag {{ docker_image.id }} {{ registry_hostname }}/{{ docker_image.id }}"
+    - "'1' in image_loaded.stdout"
+    - "docker tag {{ docker_image.id }} {{ registry_hostname }}/{{ docker_image.id }}"
     - "docker push {{ registry_hostname }}/{{ docker_image.id }}"
   when:
     - registry_role is defined

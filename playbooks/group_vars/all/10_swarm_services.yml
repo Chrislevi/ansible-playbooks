@@ -1,40 +1,56 @@
 # Uncomment to inject values to default
 
 services:
+  - name: "gui"
+#    id: "dashboard"
+    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    port: 8500
+    tags:
+      - "consul"
+      - "dashboard"
+
   - name: "registry"
-    id: "registry"
+#    id: "registry"
     address: "{{ registry_ip }}"
     port: 5005
     tags:
       - "registry"
 
   - name: "swarm"
-    id: "swarm"
-#    address: "{{ hostvars[target_host]['ansible_host'] }}"
+#    id: "swarm"
+    address: "{{ hostvars[target_host]['ansible_host'] }}"
     port: 2377
     tags:
       - "swarm"
 
   - name: "traefik"
-#    address: "{{ hostvars[target_host]['ansible_host'] }}"
-    id: "traefik"
+    address: "{{ hostvars[target_host]['ansible_host'] }}"
+#    id: "traefik"
     port: 8080
     tags:
       - "traefik"
 
   - name: "jenkins"
-#    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    address: "{{ hostvars[target_host]['ansible_host'] }}"
     id: "jenkins"
     port: 8081
     tags:
       - "jenkins"
 
-  - name: "swarm-dashboard"
-    id: "swarm-dashboard"
-#    address: "{{ hostvars[target_host]['ansible_host'] }}"
-    port: 9091
+  - name: "dashboard"
+#    id: "dashboard"
+    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    port: 9000
     tags:
       - "swarm"
+      - "dashboard"
+
+  - name: "repository"
+#    id: "dashboard"
+    address: "{{ hostvars[target_host]['ansible_host'] }}"
+    port: 8888
+    tags:
+      - "repo"
 
 # jenkins_config_dir: "{{ compose_dir }}"
 # jenkins_data_dir: "/var/lib/jenkins"

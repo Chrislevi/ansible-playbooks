@@ -1,5 +1,6 @@
 ---
 - name: "Stack | Remove {{ stack_name }} stack"
+  become: true
   docker_stack:
     state: absent
     name: "{{ stack_name }}"
@@ -9,12 +10,14 @@
   when: purge
 
 - name: "Wait for containers to stop"
+  become: true
   shell: "docker stack ps {{ stack_name }}"
   register: output
   ignore_errors: true
   until: "'nothing found in stack' in output.stderr"
-  delay: 3
+  delay: 20
   retries: 60
+  when: purge
 
 - name: "Stack | Remove {{ role_path | basename }} docker volumes"
   delegate_to: "{{ item.0 }}"

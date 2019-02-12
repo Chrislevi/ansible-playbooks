@@ -36,19 +36,10 @@ images:
   - name: "consul"
     prefix: "consul"
     tag: "{{ version }}"
-    #network_mode: "host"
     ports:
       - target: 8500
         published: 8500
         mode: host
-      # - target: 53
-      #   published: 53
-      #   mode: host
-      #   protocol: udp
-      # - target: 53
-      #   published: 53
-        # mode: host
-        # protocol: tcp
       - target: 8300
         published: 8300
         mode: host
@@ -85,6 +76,13 @@ images:
       - "CONSUL_ALLOW_PRIVILEGED_PORTS=53"
       - "CONSUL_BIND_INTERFACE={{ consul_bind_interface }}"
       - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
+      - SERVICE_8300_IGNORE=true
+      - SERVICE_8301_IGNORE=true
+      - SERVICE_8302_IGNORE=true
+      - SERVICE_8600_IGNORE=true
+      - SERVICE_8500_name=gui
+      - SERVICE_NAME=consul
+      - "SERVICE_TAGS=consul,gui"
     volumes:
       - "{{ consul_docker_vol }}:/consul/data"
       - "{{ consul_server_config }}:/etc/consul"
@@ -99,18 +97,12 @@ images:
       placement:
         constraints: [node.role ==  manager]
       labels:
-        - traefik.frontend.rule=Host:gui.consul.service.consul
+        - "traefik.frontend.rule=Host:gui.service.{{ domain_name }}"
         - traefik.enable=true
-        - traefik.port=8500
-        - traefik.tags=traefik
+        - traefik.port=8500 # Inner port
+        - traefik.tags=gui
         - traefik.docker.network=swarm_network
         - traefik.redirectorservice.frontend.entryPoints=http
-        - traefik.backend.loadbalancer.swarm=true
-        - traefik.backend.loadbalancer.method=drr
-        # - traefik.redirectorservice.frontend.redirect.entryPoint=https
-        # # Traefik service that listens to HTTPS
-        # - traefik.webservice.frontend.entryPoints=https
-        # - traefik.frontend.auth.basic.users=${USERNAME}:${HASHED_PASSWORD}
 
   - name: "consul-client"
     prefix: "consul"
@@ -148,7 +140,6 @@ images:
         published: 8600
         mode: host
         protocol: tcp
-    #network_mode: "host"
     environment:
       - "CONSUL_BIND_INTERFACE={{ consul_bind_interface }}"
       - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
@@ -166,6 +157,8 @@ images:
       placement:
         constraints: [node.role !=  manager]
 
+
+# TODO FIXME Connect to node IP
   # - name: "registrator"
   #   prefix: "gliderlabs/registrator"
   #   tag: "master"
@@ -173,74 +166,13 @@ images:
   #     - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
   #   volumes:
   #     - /var/run/docker.sock:/tmp/docker.sock
-  #   command: '-internal consul://consul.cluster:8500'
-  #   networks:
-  #     - "{{ docker_swarm_overlay.name }}"
-  #   deploy:
-  #     mode: global
-
-  # - name: proxy
-  #   prefix: "dockerflow/docker-flow-proxy"
-  #   tag: "18.11.07-15"
-  #   ports:
-  #     - target: 8080
-  #     #  published: {{ consul_proxy_port }}
-  #   environment:
-  #     - "MODE=swarm"
-  #     - "CONSUL_ADDRESS={% for host in groups['swarm-managers'] %}{{ host }}:8500{% if not loop.last %},{% endif %}{% endfor %}" # TODO FIXME change consul port hardcoded
-  #   network:
-  #     - "{{ docker_swarm_overlay.name }}"
-  #   deploy:
-  #     mode: global
-  #     placement:
-  #       constraints: [node.role ==  manager]
-  #
-  # - name: swarm-listener
-  #   prefix: "dockerflow/docker-flow-swarm-listener"
-  #   tag: "19.01.12-20"
-  #   volumes:
-  #     - type: bind
-  #       source: /var/run/docker.sock
-  #       target: /var/run/docker.sock
-  #   environment:
-  #     - DF_NOTIFY_CREATE_SERVICE_URL=http://proxy:8080/v1/docker-flow-proxy/reconfigure
-  #     - DF_NOTIFY_REMOVE_SERVICE_URL=http://proxy:8080/v1/docker-flow-proxy/remove
-  #   network:
-  #     - "{{ docker_swarm_overlay.name }}"
-  #   deploy:
-  #     mode: global
-  #     placement:
-  #       constraints: [node.role ==  manager]
-
-  # - name: "traefik_init"
-  #   prefix: traefik
-  #   tag: v1.7
-  #   command:
-  #     - "storeconfig"
-  #     - "--api"
-  #     - "--entrypoints=Name:http Address::80"
-  #     - "--entrypoints=Name:https Address::443 TLS"
-  #     - "--defaultentrypoints=http"
-  #     - "--docker"
-  #     - "--docker.swarmMode"
-  #     - "--docker.domain={{ domain_name }}"
-  #     - "--docker.watch"
-  #     - "--consul"
-  #     - "--consul.endpoint=consul.cluster:8500"
-  #     - "--consul.prefix=traefik"
-  #   volumes:
-  #     - type: bind
-  #       source: /var/run/docker.sock
-  #       target: /var/run/docker.sock
+  #   command: '-internal {{hostvars[groups["swarm-managers"][0]]["ansible_host"] }}  consul://consul.cluster:8500'
   #   networks:
   #     swarm_network:
   #       aliases:
   #         - consul.cluster
   #   deploy:
-  #     restart_policy:
-  #       condition: on-failure
-  #   depends_on:
-  #     - consul
+  #     mode: global
 
   - name: "traefik"
     prefix: traefik
@@ -248,6 +180,11 @@ images:
     depends_on:
       - traefik_init
       - consul
+    environment:
+      - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
+      - SERVICE_80_IGNORE=true
+      - SERVICE_8080_NAME=traefik
+      - "SERVICE_TAGS=traefik"
     command:
       # - "storeconfig"
       - "--api"
@@ -258,6 +195,12 @@ images:
       - "--docker.swarmMode"
       - "--docker.domain={{ domain_name }}"
       - "--docker.watch"
+      # - "--consulCatalog"
+      # - "--consulCatalog.endpoint=consul.cluster:8500"
+      # - "--consulCatalog.exposedByDefault=false"
+      # - "--consulCatalog.domain={{ domain_name }}"
+      # - "--consulCatalog.prefix=traefik"
+#      - '--frontEndRule.Host:{{.ServiceName}}.service.{{ domain_name }}'
       # - "--consul"
       # - "--consul.endpoint=consul.cluster:8500"
       # - "--consul.prefix=traefik"
@@ -273,9 +216,6 @@ images:
       - target: 80
         published: 80
         mode: host
-      - target: 443
-        published: 443
-        mode: host
       - target: 8080
         published: 8080
         mode: host
@@ -290,9 +230,9 @@ images:
       restart_policy:
         condition: on-failure
       labels:
-        - traefik.frontend.rule=Host:traefik.service.consul
+        - "traefik.frontend.rule=Host:traefik.service.{{ domain_name }}"
         - traefik.enable=true
-        - traefik.port=8080
+        - traefik.port=8080 # Inner port
         - traefik.tags=traefik
         - traefik.docker.network=swarm_network
         - traefik.redirectorservice.frontend.entryPoints=http

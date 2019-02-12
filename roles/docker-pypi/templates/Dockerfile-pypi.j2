@@ -1,6 +1,6 @@
 FROM {{ registry_hostname }}/{{ item.1.build.from }}
 
-#COPY sources.list /etc/apt/sources.list
+COPY sources.list /etc/apt/sources.list
 RUN apt update || /bin/true && \
     apt install -y apache2 apache2-utils
 

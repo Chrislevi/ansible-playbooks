@@ -50,8 +50,8 @@
   roles:
     - { role: jenkins, purge: false }
 
-      #- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
-      #  become:
-      #  gather_facts: yes
-      #  roles:
-      #    - { role: docker-pypi, purge: false }
+- hosts: '{{ target_hosts | d("swarm-managers[0]") }}'
+  become:
+  gather_facts: yes
+  roles:
+   - { role: docker-pypi, purge: false }

@@ -13,7 +13,6 @@ edit_hosts: True
 # Pull image from local private registry
 #from_registry: True
 
-domain_name: "consul"
 vagrant_dir: "{{ work_dir }}/.vagrant"
 work_dir: "{{ lookup('pipe','pwd').split('/playbooks')[0] }}"
 playbooks_dir: "{{ work_dir }}/playbooks"
@@ -68,11 +67,5 @@ consul_proxy_port: 8888
 consul_bind_interface: eth1
 
 #registry_host: "{{ lookup('dig', ansible_host) }}"
-
-s3:
-  endpoint: ""
-  bucket: ""
-  access_key: ""
-  secret_key: ""
 
 ansible_deb_version: 2.7.6

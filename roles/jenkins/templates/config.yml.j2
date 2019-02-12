@@ -1,6 +1,6 @@
 security:
   realm: jenkins_database
-  adminPassword: ${JENKINS_ADMIN_PASSWORD}
+  adminPassword: {{ jenkins_admin_pass }}
 
   remove_master_envvars:
   - '.*PASSWORD.*'
@@ -28,13 +28,11 @@ clouds:
 
 #seed_jobs:
 #  seed-job:
-#    source: 
+#    source:
 #      remote: https://github.com/odavid/my-bloody-jenkins.git
 #      branch: 'master'
-#    triggers: 
+#    triggers:
 #      pollScm: 'H/2 * * * *'
 #      periodic: '@hourly'
 #    pipeline: examples/jobs/seed/Jenkinsfile
 #    executeWhen: always #firstTimeOnly always never
-
-

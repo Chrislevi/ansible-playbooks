@@ -20,6 +20,9 @@ services:
 {%   else %}
     image: {{ image.prefix }}:{{ image.tag }}
 {%   endif %}
+{%     if image.hostname is defined %}
+    hostname: {{ image.hostname }}
+{%     endif %}
 {%     if image.volumes is defined %}
     volumes:
 {{    image.volumes | to_nice_yaml | indent(6, true) }}

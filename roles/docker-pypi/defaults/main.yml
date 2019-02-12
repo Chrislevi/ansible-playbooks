@@ -3,17 +3,17 @@ data_dir: "{{ pypi_data_dir | default(compose_dir + '/data') }}"
 version: "{{ pypi_version | default('1.0.0') }}"
 stack_name: "{{ pypi_stack_name | default('pypi') }}"
 
-pypi_backup_os_user: vagrant
-
 dockerfiles:
   - Dockerfile-loadbin
   - Dockerfile-pypi
 
 templates:
   - { file: "backup-repo.sh", dest: "{{ config_dir }}" }
+  - { file: "sources.list", dest: "{{ config_dir }}" }
 
 directories:
   - "{{ compose_dir }}"
+  - "{{ data_dir }}"
 
 images:
   - name: "apache-pypi"
@@ -23,7 +23,7 @@ images:
     prefix: "apache-pypi"
     tag: "{{ version }}"
     ports:
-      - '80:80'
+      - '8888:80'
     volumes:
       - "{{ data_dir }}:/var/www/html"
     networks:
@@ -34,6 +34,14 @@ images:
       mode: replicated
       placement:
         constraints: ["node.hostname == {{ groups['swarm-workers'][0] }}"]
+      labels:
+        - "traefik.frontend.rule=Host:repository.service.{{ domain_name }}"
+        - traefik.enable=true
+        - "traefik.port=80"
+        - traefik.tags=pypi
+        - traefik.docker.network=swarm_network
+        - traefik.redirectorservice.frontend.entryPoints=http
+
 
   - name: "loadbin-pypi"
     build:

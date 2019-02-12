@@ -24,9 +24,14 @@ images:
     tag: "{{ version }}"
     dns: "{{ dns_server }}"
     ports:
-      - '{{ jenkins_port }}:8080'
+      - '8081:8080'
       - '50000:50000'
     environment:
+      - SERVICE_50000_NAME=slaves
+      - "SERVICE_8081_NAME=jenkins"
+      - "SERVICE_8081_TAGS=jenkins"
+      - SERVICE_50000_TAGS="jenkins"
+      - SERVICE_NAME=jenkins
       - JAVA_OPTS_MEM='-Xmx1g'
       # Disable hyper provision of slaves - docker plugin strategy is enough
       - JAVA_OPTS_LOAD_STATS_CLOCK=''
@@ -51,9 +56,17 @@ images:
       placement:
         constraints: [node.role ==  worker]
       labels:
-        - traefik.frontend.rule=Host:jenkins.service.consul
+        - "traefik.frontend.rule=Host:jenkins.service.{{ domain_name }}"
         - traefik.enable=true
         - "traefik.port=8080"
         - traefik.tags=jenkins
         - traefik.docker.network=swarm_network
         - traefik.redirectorservice.frontend.entryPoints=http
+        # - com.df.port=8080
+        # - com.df.notify=true
+        # - com.df.distribute=true
+        # - com.df.shortName=true
+        # - com.df.servicePath=/login
+        # - com.df.serviceName='jenkins-master'
+        # - com.df.reqPathSearch='/p/'
+        # - com.df.reqPathReplace='/'

@@ -1,1 +1,14 @@
-dns_server: "8.8.8.8"
+dns_server:
+  - "8.8.8.8"
+
+domain_name: "consul"
+s3:
+  endpoint: ""
+  bucket: ""
+  access_key: ""
+  secret_key: ""
+
+repo_config_cmds:
+  - "echo 'THIS IS STAB COMMAND'"
+
+pypi_backup_os_user: vagrant

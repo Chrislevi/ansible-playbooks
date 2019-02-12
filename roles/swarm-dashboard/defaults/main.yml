@@ -14,11 +14,18 @@ images:
     tag: "{{ version }}"
     networks:
       swarm_network:
+    ports:
+      - target: 9000
+        published: 9000
+        mode: host
+    environment:
+      - SERVICE_9000_NAME=dashboard
+      - SERVICE_9000_TAGS=dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     deploy:
       mode: replicated
-      replicas: 1
+      replicas: 2
       placement:
         constraints: [node.role==manager]
       restart_policy:
@@ -32,17 +39,15 @@ images:
           cpus: '0.05'
           memory: 10M
       labels:
-        - "traefik.frontend.rule=PathPrefixStrip:/portainer"
-        - "traefik.backend=portainer"
+        - "traefik.frontend.rule=Host:dashboard.service.{{ domain_name }}"
+        - traefik.enable=true
         - "traefik.port=9000"
-        - "traefik.weight=10"
-        - "traefik.enable=true"
-        - "traefik.passHostHeader=true"
-        - "traefik.docker.network=ntw_front"
-        - "traefik.frontend.entryPoints=http"
-        - "traefik.backend.loadbalancer.swarm=true"
-        - "traefik.backend.loadbalancer.method=drr"
+        - traefik.tags=dashboard
+        - traefik.docker.network=swarm_network
+        - traefik.redirectorservice.frontend.entryPoints=http
+        # - "traefik.backend.loadbalancer.swarm=true"
+        # - "traefik.backend.loadbalancer.method=drr"
         # https://github.com/containous/traefik/issues/563#issuecomment-421360934
-        - "traefik.frontend.redirect.regex=^(.*)/portainer$$"
-        - "traefik.frontend.redirect.replacement=$$1/portainer/"
-        - "traefik.frontend.rule=PathPrefix:/portainer;ReplacePathRegex: ^/portainer/(.*) /$$1"
+        # - "traefik.frontend.redirect.regex=^(.*)/dashboard$$"
+        # - "traefik.frontend.redirect.replacement=$$1/dashboard/"
+        # - "traefik.frontend.rule=PathPrefix:/dashboard;ReplacePathRegex: ^/dashboard/(.*) /$$1"
