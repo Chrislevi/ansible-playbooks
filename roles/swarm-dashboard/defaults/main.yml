@@ -15,9 +15,7 @@ images:
     networks:
       swarm_network:
     ports:
-      - target: 9000
-        published: 9000
-        mode: host
+      - 9000:9000
     environment:
       - SERVICE_9000_NAME=dashboard
       - SERVICE_9000_TAGS=dashboard

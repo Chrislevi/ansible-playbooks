@@ -11,4 +11,4 @@ s3:
 repo_config_cmds:
   - "echo 'THIS IS STAB COMMAND'"
 
-pypi_backup_os_user: vagrant
+pip_url: "https://pypi.org/simple/"

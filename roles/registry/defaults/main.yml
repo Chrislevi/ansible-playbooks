@@ -7,18 +7,6 @@ directories:
 local_volumes:
   - "{{ data_dir }}"
 
-  # - name: "gui"
-  #   restart: always
-  #   prefix: "konradkleine/docker-registry-frontend"
-  #   tag: "v2"
-  #   ports:
-  #     - 9090:80
-  #   environment:
-  #     - 'ENV_DOCKER_REGISTRY_HOST={{ registry_ip }}'
-  #     - 'ENV_DOCKER_REGISTRY_PORT={{ registry_port }}'
-  #   depends_on:
-  #     - registry
-
 images:
   - name: "gui"
     restart: always
@@ -27,7 +15,7 @@ images:
     ports:
       - '{{ registry_gui_port }}:80'
     environment:
-      - 'URL=http://127.0.0.1:{{ registry_port }}'
+      - 'REGISTRY_URL=http://registry:5000'
 
   - name: "registry"
     restart: always
@@ -35,9 +23,6 @@ images:
     tag: "2"
     ports:
       - "0.0.0.0:{{ registry_port }}:5000/tcp"
-      # - published: "{{ registry_port }}"
-      #   target: 5000
-      #   mode: host
     environment:
       - "REGISTRY_HTTP_HEADERS_Access-Control-Allow-Origin=['*']"
     volumes:

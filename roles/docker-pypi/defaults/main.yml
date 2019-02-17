@@ -19,11 +19,11 @@ images:
   - name: "apache-pypi"
     build:
       dockerfile: "Dockerfile-pypi"
-      from: "ubuntu:xenial-20190122"
+      from: "ubuntu:xenial-20170710"
     prefix: "apache-pypi"
     tag: "{{ version }}"
     ports:
-      - '8888:80'
+      - 8888:80
     volumes:
       - "{{ data_dir }}:/var/www/html"
     networks:
@@ -42,24 +42,27 @@ images:
         - traefik.docker.network=swarm_network
         - traefik.redirectorservice.frontend.entryPoints=http
 
-
   - name: "loadbin-pypi"
     build:
       dockerfile: "Dockerfile-loadbin"
-      from: "ubuntu:xenial-20190122"
+      from: "ubuntu:xenial-20170710"
     prefix: "loadbin-pypi"
     tag: "{{ version }}"
-    command: debug
+    entrypoint:
+      - /backup-repo.sh
+      - restore
+      - latest.tar.gz
     environment:
+      - PIP_INDEX_URL="{{ pip_url }}"
       - AWS_ACCESS_KEY="{{ s3.access_key }}"
       - AWS_SECRET_KEY="{{ s3.secret_key }}"
       - BUCKET="{{ s3.bucket }}"
       - OBJ_ENDPOINT="{{ s3.endpoint }}"
-      - OS_USER="{{ pypi_backup_os_user }}"
     volumes:
       - "{{ data_dir }}:/var/www/html"
-    networks:
-      - "{{ docker_swarm_overlay.name }}"
+    # network_mode: host
+   networks:
+     - host
     deploy:
       endpoint_mode: vip
       replicas: 1 # FIXME cant get int

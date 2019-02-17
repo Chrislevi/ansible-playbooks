@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-DATA=/var/www/html/simple
-USER=${OS_USER:-vagrant}
+DATA=/var/www/html/
 TIME=pypi-`/bin/date +%d-%m-%y`
-DEST=/home/$USER
+DEST=/tmp
 TAR=$DEST/$TIME.tar.gz
 #ENV_FILE=${ENV_FILE:-'.env'}
 
@@ -25,7 +24,7 @@ function tar_backup() {
 function install_deps() {
   if [ ! -f /usr/bin/aws ]
   then
-    sudo apt install -y awscli
+    pip install awscli
   fi
 }
 
@@ -65,7 +64,13 @@ function restore() {
   cd $DATA
   tar -kxvf /tmp/$1 . > /dev/null 2>&1
 
-  echo "Restored: $1 to $DATA from s3://$BUCKET"
+  RC=$?
+  if [ $RC -eq 0 ]
+  then
+    echo "Done."
+    echo "Restored: $1 to $DATA from s3://$BUCKET"
+    rm -f /tmp/$1 || /bin/true
+  fi
 }
 
 function backup() {
@@ -99,13 +104,12 @@ case $1 in
   backup) backup;;
   restore) restore $2;;
   list) list;;
-  debug) echo "bucket: $BUCKET\n \
-               endpoint: $OBJ_ENDPOINT \n \
-               access_key: ${AWS_ACCESS_KEY} \n \
-               data: $DATA \n \
-               user: $USER \n \
-               time: $TIME \n \
-               dest: $DEST \n \
-               tar: $TAR"
-  *) echo "$msg"
-     exit 1;;
+  debug) echo "bucket: $BUCKET \
+               endpoint: $OBJ_ENDPOINT \
+               access_key: ${AWS_ACCESS_KEY} \
+               data: $DATA \
+               time: $TIME \
+               dest: $DEST \
+               tar: $TAR";;
+  *) echo "$msg";;
+esac

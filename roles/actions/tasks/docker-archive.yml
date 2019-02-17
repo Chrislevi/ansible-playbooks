@@ -7,8 +7,7 @@
       id: "{{ image.prefix }}:{{ image.tag }}"
       #binary: "{{ image.name }}-{{ image.tag }}.image.tar"
       binary: "{{ image.prefix.split('/')[-1] }}-{{ image.tag }}.image.tar"
-  tags:
-    - archive
+
 
 - name: "Set docker images directory -> {{ archive_dir }}"
   set_fact:
@@ -108,15 +107,21 @@
       - push
 
   - name: "Build image {{ docker_image.binary }}"
-    docker_image:
-      path: "{{ compose_dir }}"
-      dockerfile: "{{ image.build.dockerfile }}"
-      name: "{{ image.name }}"
-      tag: "{{ image.tag }}"
-      pull: no
-      #push: yes
+    shell: "docker build {{ compose_dir }} --network host -f {{ compose_dir }}/{{ image.build.dockerfile }} -t {{ image.name }}:{{ image.tag }} --no-cache"
     tags:
       - archive
+
+  # TODO FIXME --network host not supported
+  # - name: "Build image {{ docker_image.binary }}"
+  #   docker_image:
+  #     path: "{{ compose_dir }}"
+  #     dockerfile: "{{ image.build.dockerfile }}"
+  #     name: "{{ image.name }}"
+  #     tag: "{{ image.tag }}"
+  #     pull: no
+  #     #push: yes
+  #   tags:
+  #     - archive
 
   - name: "Archive -CUSTOM- images: {{ docker_image.binary }}"
     become: true
@@ -148,6 +153,8 @@
 - name: "Check if image is loaded"
   shell: "docker images -q -f 'reference={{ docker_image.id }}' | wc -l"
   register: image_loaded
+  tags:
+    - push
 
 - name: "Tag & Push {{ registry_hostname }}/{{ docker_image.id }}"
   shell: "{{ item }}"

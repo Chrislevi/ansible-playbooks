@@ -24,8 +24,8 @@ images:
     tag: "{{ version }}"
     dns: "{{ dns_server }}"
     ports:
-      - '8081:8080'
-      - '50000:50000'
+      - 8081:8080
+      - 50000:50000
     environment:
       - SERVICE_50000_NAME=slaves
       - "SERVICE_8081_NAME=jenkins"

@@ -37,41 +37,11 @@ images:
     prefix: "consul"
     tag: "{{ version }}"
     ports:
-      - target: 8500
-        published: 8500
-        mode: host
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: tcp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: tcp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: tcp
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: udp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: udp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: udp
-      - target: 8600
-        published: 53
-        mode: host
-        protocol: udp
-      - target: 8600
-        published: 53
-        mode: host
-        protocol: tcp
+      - "8500:8500"
+      - "8300-8302:8300-8302/tcp"
+      - "8300-8302:8300-8302/udp"
+      - "53:8600/tcp"
+      - "53:8600/udp"
     environment:
       - "CONSUL_ALLOW_PRIVILEGED_PORTS=53"
       - "CONSUL_BIND_INTERFACE={{ consul_bind_interface }}"
@@ -108,38 +78,10 @@ images:
     prefix: "consul"
     tag: "{{ version }}"
     ports:
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: tcp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: tcp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: tcp
-      - target: 8300
-        published: 8300
-        mode: host
-        protocol: udp
-      - target: 8301
-        published: 8301
-        mode: host
-        protocol: udp
-      - target: 8302
-        published: 8302
-        mode: host
-        protocol: udp
-      - target: 8600
-        published: 8600
-        mode: host
-        protocol: udp
-      - target: 8600
-        published: 8600
-        mode: host
-        protocol: tcp
+      - "8300-8302:8300-8302/tcp"
+      - "8300-8302:8300-8302/udp"
+      - "8600:8600/tcp"
+      - "8600:8600/udp"
     environment:
       - "CONSUL_BIND_INTERFACE={{ consul_bind_interface }}"
       - "CONSUL_HTTP_TOKEN={{ consul_api_token }}"
@@ -213,12 +155,8 @@ images:
         aliases:
           - consul.cluster
     ports:
-      - target: 80
-        published: 80
-        mode: host
-      - target: 8080
-        published: 8080
-        mode: host
+      - 80:80
+      - 8080:8080
     deploy:
       mode: global
       placement:

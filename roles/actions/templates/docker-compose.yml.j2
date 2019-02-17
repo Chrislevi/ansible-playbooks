@@ -4,6 +4,8 @@ version: "{{ compose_api_version }}"
 networks:
   {{ docker_swarm_overlay.name }}:
     external: true
+  host:
+    external: true
 
 {% if volumes is defined %}
 volumes:
@@ -37,6 +39,10 @@ services:
 {%     endif %}
 {%     if image.command is defined %}
     command: {{ image.command }}
+{%     endif %}
+{%     if image.entrypoint is defined %}
+    entrypoint:
+{{    image.entrypoint | to_nice_yaml | indent(6, true) }}
 {%     endif %}
 {%     if image.network_mode is defined %}
     network_mode: {{ image.network_mode }}
